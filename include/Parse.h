@@ -1,6 +1,8 @@
+
 //**************************************************************************************************
 // Includes
 //**************************************************************************************************
+
 #include <fstream>
 #include <stdint.h>
 #include <string>
@@ -29,7 +31,7 @@ struct CommandIndex                 //Структура хранит полож
 
 struct byteString           //Байт-строка
 {
-    uint8_t bytes[STRING_LENGTH_BYTE];
+    uint8_t bytes [STRING_LENGTH_BYTE];
 };
 
 class Parse
@@ -40,15 +42,15 @@ class Parse
         // Declarations
         //**************************************************************************************************
 
-        void byteStringOut(byteString Out);
+        void byteStringOut (byteString Out);
 
-        static uint16_t countLength(uint8_t one, uint8_t two);
-        static byteString StringToByte(std::string Input);
+        static uint16_t countLength (uint8_t one, uint8_t two);
+        static byteString StringToByte (std::string Input);
         static bool IsCommand (byteString Input, CommandIndex cmnd);
-        static bool CheckFor_0x34(char* Input, byteString commandString, CommandIndex cmnd);
-        static bool CheckFor_0x36(byteString* commandString, CommandIndex cmnd);
+        static bool CheckFor_0x34 (char* Input, byteString commandString, CommandIndex cmnd);
+        static bool CheckFor_0x36 (byteString* commandString, CommandIndex cmnd);
         static bool CheckFor_0x37 (char* Input, byteString commandString, CommandIndex cmnd);
-        static byteString* FromTxtTobyteString(const char* Path, uint32_t& DataStringNumber);
+        static byteString* FromTxtTobyteString (const char* Path, uint32_t& DataStringNumber);
     public:
-        static int FromTxtToBin(const char* TxtPath, const char* BinPath);
+        static int FromTxtToBin (const char* TxtPath, const char* BinPath);
 };
