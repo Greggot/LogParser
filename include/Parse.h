@@ -1,3 +1,6 @@
+//**************************************************************************************************
+// Includes
+//**************************************************************************************************
 #include <fstream>
 #include <stdint.h>
 #include <string>
@@ -5,18 +8,26 @@
 #include <stdio.h>
 #include <iostream>
 
-#define MAX_BUFFER_SIZE 0xFFFFFFF   //255 MB
-#define STRING_LENGTH_ASCII 24
-#define STRING_LENGTH_BYTE 8
+//**************************************************************************************************
+// Definitions
+//**************************************************************************************************
 
-struct CommandIndex
+#define MAX_BUFFER_SIZE 0xFFFFFFF   //255 MB - максимальный развер буфера
+#define STRING_LENGTH_ASCII 24      //Длина строки в файле *.txt
+#define STRING_LENGTH_BYTE 8        //Количество байт информации в строке
+
+//**************************************************************************************************
+// Structures and Data Types
+//**************************************************************************************************
+
+struct CommandIndex                 //Структура хранит положение элементов запроса-ответа в строках и занчение SID
 {
     uint8_t SID_VALUE;
     uint8_t SIZE, SID, SUB_FUNC;
     uint8_t SIZE_RESPONCE, SID_RESPONCE, NRC_RESPONCE, SUB_FUNC_RESPONCE;
 };
 
-struct byteString
+struct byteString           //Байт-строка
 {
     uint8_t bytes[STRING_LENGTH_BYTE];
 };
@@ -24,6 +35,11 @@ struct byteString
 class Parse
 {
     private:
+
+        //**************************************************************************************************
+        // Declarations
+        //**************************************************************************************************
+
         void byteStringOut(byteString Out);
 
         static uint16_t countLength(uint8_t one, uint8_t two);
