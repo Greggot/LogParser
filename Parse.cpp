@@ -56,7 +56,7 @@ byteString Parse::StringToByte(std::string Input)
         uint8_t cycleLength = Input.size() + 1;
         for (uint8_t i = 0; i < cycleLength; i++)
         {
-            if(Input[i] == '\t' || Input[i] == '\x0')       //После каждого таба или конца строки 
+            if (Input[i] == '\t' || Input[i] == '\x0')       //После каждого таба или конца строки 
             {
                 Output.bytes[Count] = (uint8_t) std::stoi (buff, 0, 16);  //буфер переводится в шестнадцатеричное число и помещается в байт,
                 buff = "";                                              //а затем очищается
@@ -109,7 +109,7 @@ bool Parse::CheckFor_0x34(char* Input, byteString commandString, CommandIndex cm
 bool Parse::CheckFor_0x36(byteString* commandString, CommandIndex cmnd)      
 {
     uint16_t msgLength = countLength(commandString->bytes[cmnd.SIZE], commandString->bytes[cmnd.SIZE+1]);   
-    if(msgLength > 6)
+    if (msgLength > 6)
         msgLength = ceil((msgLength - 6) / 7) + 3;    
     else
         msgLength = 1;
