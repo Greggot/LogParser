@@ -114,11 +114,27 @@ bool Parse::CheckFor_0x36(byteString* commandString, CommandIndex cmnd)
     else
         msgLength = 1;
 
-    commandString += msgLength;                          //Ради экономии памяти сдвигаем командную строку на количество строк до строки с ответом
-    byteString* responceString = commandString + 1;       //Создаём вторую байт-строку, что на одну ниже строки с ответом т.к. обычно там находится
-                                                        //положительный ответ на запрос
-    return (commandString->bytes[cmnd.SID_RESPONCE] == 0x7F ||                  //Примечание: ИЛИ стоит потому, что, как оказалось, не все 0х36-запросы кончаются  
-            responceString->bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE + 0x40);   //запросом подождать
+    if((Length - 6) % 7 == 0)   //Если данные заканчиваются вплотную, то перейти на строку вверх
+        msgLength -= 1;
+
+                      
+    byteString* responceString = commandString + msgLength + 1;      //строка с Positive Response
+    byteString* subResponceString = responceString - 1;              //строка с запросом подождать
+    return (responceString->bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE + 0x40 &&        //0х36 заканчивается положительным ответом
+            subResponceString->bytes[cmnd.SID_RESPONCE] == 0x7F);                       //Перед которым сервер просит подождать
+}
+
+//**************************************************************************************************
+// Procedure CheckFor_0x76()
+//**************************************************************************************************
+
+// Проверка строки на конец пакета //
+
+bool Parse::CheckFor_0x76 (byteString* responceString, CommandIndex cmnd)
+{
+    byteString* subResponceString = responceString + 1;
+    return responceString->bytes[cmnd.SID_RESPONCE] == 0x7F &&
+           subResponceString->bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE+0x40;
 }
 
 //**************************************************************************************************
@@ -217,54 +233,58 @@ int Parse::FromTxtToBin(const char* TxtPath, const char* BinPath)
     FILE* out;                          //Объект выходного бинарного файла
     out = fopen(BinPath, "wb+");        //Файл перезаписывается, если существует, создаётся, если его нет
 
-    for(uint32_t i = 0; i<DataStrLen; i++)       
+    for (uint32_t i = 0; i<DataStrLen; i++)
     {
-        if(!IsDataTransferActive)       //Если не передаются данные по 0х36, то проверяем на наличие команды-ответа
+        if (!IsDataTransferActive)
         {
-            if(IsCommand(*DataPtr, _0x36))
-            {
+            if (IsCommand(*DataPtr, _0x36))
                 IsDataTransferActive = CheckFor_0x36(DataPtr, _0x36);
-                if(IsDataTransferActive)              //Если найдена команда, обнулить счётчики, посчитать длину сообщения
-                {
-                    StringCount = 0;
-                    PackageCount = 0;
-                    PackageLength = countLength(DataPtr->bytes[_0x36.SIZE], DataPtr->bytes[_0x36.SIZE+1]);
-                    DataPtr--;  //после нахождения запроса, отвечающий за его обработку else пропустится одну итерацию, 
-                }               //так что нужно заранее сдвинуться на строку назад
-            }
-        }
-        else    //Если всёже идёт передача
-        {
-            if(PackageCount < PackageLength)    //Пока количество переданных на момент итерации данных меньше общего количества
+            if (IsDataTransferActive)
             {
-                uint8_t index;  //Байт, с которого считываются полезные данные до конца строки
-
-                switch(StringCount) //index зависит от строки, с которой считываютсяданные
-                {
-                    case 0:     //Если это первая строка, то считываем всё, что дальше SubFunction
-                        index = 4;
-                        break;
-                    case 1:     //Если вторая строка (30 0 0 0 0 0 0 0), то не считываем вообще
-                        index = STRING_LENGTH_BYTE;
-                        break;
-                    default:    //Если все остальные строки пакета, то считываем со второго байта
-                        index = 1;
-                        break;
-                }
-                      
-                for(; index < STRING_LENGTH_BYTE; index++) 
-                {
-                    if(PackageCount + 2 == PackageLength)         //Нумерация текущих пакетов начинается с нуля, общего количества - с единицы
-                    {                                           //Потому если следущая строка является концом пакета, то закончить передачу
-                        IsDataTransferActive = false;
-                        break;
-                    }
-                    fwrite(&DataPtr->bytes[index], 1, 1, out);  //Передача - помещение полезных байтов в бинарный файл
-                    PackageCount++;
-                }
-                StringCount++;
+                StringCount = 0;
+                PackageCount = 0;
+                PackageLength = countLength(DataPtr->bytes[_0x36.SIZE], DataPtr->bytes[_0x36.SIZE+1]);
+                std::cout<<"SIZE: "<<PackageLength<<std::endl;
             }
         }
+        else
+        {
+            if (DataPtr->bytes[0] < STRING_LENGTH_BYTE)
+                IsDataTransferActive = !CheckFor_0x76(DataPtr, _0x37);
+        }
+
+
+        if (IsDataTransferActive && PackageCount < PackageLength)
+        {
+            uint8_t index = 0;
+
+            switch (StringCount)      //Структура полезных данных команды 0х36 в строке зависит от номера строки:
+            {                         // MS     MS      SID     N       D       D       D       D  -  0 строка 
+                case 0:               // 30     0       0       0       0       0       0       0  -  1 строка
+                    index = 4;        // K      D       D       D       D       D       D       D  -  k-ая строка
+                    break;            //, где N - номер пакета, K - номер строки в пакете, D - любые данные
+                case 1:
+                    index = STRING_LENGTH_BYTE;
+                    break;
+                default:
+                    index = 1;
+                    break;
+            }
+
+            for(; index < STRING_LENGTH_BYTE; index++)  //Считываение пакетов в зависимотси от структуры выше
+            {
+                if(PackageCount + 2 == PackageLength)         //Нумерация текущих пакетов начинается с нуля, общего количества - с единицы
+                {                                           //Потому если следущая строка является концом пакета, то закончить передачу
+                    IsDataTransferActive = false;
+                    break;
+                }
+                fwrite(&DataPtr->bytes[index], 1, 1, out);  //Передача - помещение полезных байтов в бинарный файл
+                PackageCount++;
+            }
+
+            StringCount++;
+        }
+
         DataPtr++;
     }
 
