@@ -1,3 +1,7 @@
+#**************************************************************************************************
+# Includes
+#**************************************************************************************************
+
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
@@ -5,58 +9,78 @@ from tkinter.filedialog import askopenfilename
 import subprocess
 import os
 
-root = Tk()
-root.title("Parser")
-root.geometry('640x300+200+100')
-root.resizable(False, False)
-
-prods = ['TRW', 'Bosch', 'Delphi']
-servs = ['Upload', 'Download']
+#**************************************************************************************************
+# Definitions
+#**************************************************************************************************
 
 path = ''
 
-SettingsFrame = ttk.LabelFrame(root, text = 'Settings', width = 300)
+#**************************************************************************************************
+# Window Structures (Widgets)
+#**************************************************************************************************
+
+root = Tk()
+root.title("Parser")                # Название окна
+root.geometry('640x300+200+100')    # Размеры окна и расстояние от краёв экрана
+root.resizable(False, False)        # Запрет на изменение размеров окна
+
+prods = ['TRW', 'Bosch', 'Delphi']  # Список производителей
+servs = ['Upload', 'Download']      # Список режимов
+
+SettingsFrame = ttk.LabelFrame(root, text = 'Settings', width = 300)            # Рамка, внутри которой находится настройки
 SettingsFrame.pack(fill = X)
 
-ChooseFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)
+ChooseFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)     # Рамки выбора производителя и режима
 ChooseFrame.pack(side = TOP, pady = 5)
 
-UpperChoose = Frame(ChooseFrame, borderwidth = 0, highlightthickness = 0)
+UpperChoose = Frame(ChooseFrame, borderwidth = 0, highlightthickness = 0)       # Рамка выбора производителя
 UpperChoose.pack(side = TOP)
 
-DownChoose = Frame(ChooseFrame, borderwidth = 0, highlightthickness = 0)
+DownChoose = Frame(ChooseFrame, borderwidth = 0, highlightthickness = 0)        # Рамка выбора режима. Все раки нужны, чтобы нормально отобразить элементы в центре
 DownChoose.pack(side = TOP, pady = 5)
 
-ttk.Label(UpperChoose, text = 'Producer:').pack(side = LEFT)
-ttk.Label(DownChoose, text='Service:').pack(side = LEFT, pady = 5)
+ttk.Label(UpperChoose, text = 'Producer:').pack(side = LEFT)        # Надпись "Производитель"
+ttk.Label(DownChoose, text='Service:').pack(side = LEFT, pady = 5)  # Надпись "Режим"
 
-ttk.Combobox(UpperChoose, values = prods, state = "readonly").pack(side = RIGHT, padx = 10)
-ttk.Combobox(DownChoose, values = servs, state = "readonly").pack(side = RIGHT, pady = 5, padx = 17)
+ttk.Combobox(UpperChoose, values = prods, state = "readonly").pack(side = RIGHT, padx = 10)             # Выбор производителя
+ttk.Combobox(DownChoose, values = servs, state = "readonly").pack(side = RIGHT, pady = 5, padx = 17)    # Выбор режима
 
-SelectFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)
+SelectFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)     #Рамка выбора файла
 SelectFrame.pack(side = BOTTOM, pady = 5)
 
-PathLabel = Label(SelectFrame, text = path)
+PathLabel = Label(SelectFrame, text = path)         # Надпись, хранящая путь к файлу
 PathLabel.pack(side = RIGHT, pady = 5, padx = 5)
+
+#**************************************************************************************************
+# Procedure setInputLog()
+#**************************************************************************************************
+
+# Считывание пути к входному файлу  #
 
 def setInputLog():
     path = askopenfilename(
-        filetypes=((".txt files", "*.txt"),))
-    PathLabel.config(text = path)
+        filetypes=((".txt files", "*.txt"),))   # Открывать только файлы формата .txt
+    PathLabel.config(text = path)           # Поменять надпись, хранящую путь к файлу
 
-SelectFileButton = Button(SelectFrame, text = "Select a file", command = setInputLog)
+SelectFileButton = Button(SelectFrame, text = "Select a file", command = setInputLog)   # Кнопка, считывающая путь к файлу
 SelectFileButton.pack(side = TOP, pady = 5, padx = 5)
 
-def Parse():
-    outputPath = 'C' + PathLabel["text"][1:len(path)-3] + 'bin'
-    proc = subprocess.Popen('ParserVolvo' + ' ' + PathLabel["text"] + ' ' + outputPath,  creationflags = subprocess.SW_HIDE, shell = True)
-    proc.wait()
-    if os.path.isfile(outputPath):
-        messagebox.showinfo('Success', 'File has been generated at ' + outputPath)
-    else:
-        messagebox.showerror('Error', 'File hasn\'t been generated!')
+#**************************************************************************************************
+# Procedure Parse()
+#**************************************************************************************************
 
-message_button = Button(root, text = "Filter data", command = Parse)
+# Запускает из консоли программу ParseVolvo #
+
+def Parse():
+    outputPath = 'C' + PathLabel["text"][1:len(path)-3] + 'bin'     #Путь к бинарнику будет тем же, что и уисходного файла. Отличаться будет только формат
+    proc = subprocess.Popen('ParserVolvo' + ' ' + PathLabel["text"] + ' ' + outputPath,  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
+    proc.wait()     # Ожидание конца выполнения
+    if os.path.isfile(outputPath):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
+        messagebox.showinfo('Success', 'File has been generated at ' + outputPath)  # Сообщение с информацией об успехе
+    else:
+        messagebox.showerror('Error', 'File hasn\'t been generated!')   # Сообщение-ошибка
+
+message_button = Button(root, text = "Filter data", command = Parse)    # Кнопка, запускающая Parse()
 message_button.pack()
 
-root.mainloop()
+root.mainloop()         # Функция, обновляющая виджеты на экране
