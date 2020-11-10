@@ -11,8 +11,8 @@ $(OBJ) : $(CPP)
 	$(CC) -c $@ $^
 	
 objects : main.cpp Parse.cpp
-	$(CC) -c main.o main.cpp
-	$(CC) -c Parse.o Parse.cpp
+	$(CC) main.cpp -c
+	$(CC) Parse.cpp -c 
 
 clear:
 	$(CLEAR) main.o
