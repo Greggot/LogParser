@@ -4,10 +4,10 @@
 // Global variable
 //**************************************************************************************************
 
-byteString emptybyteString {{0,0,0,0,0,0,0,0}}; //Пустая байт-строка для инициализации объектов
+byteString emptybyteString {{0,0,0,0,0,0,0,0}}; //РџСѓСЃС‚Р°СЏ Р±Р°Р№С‚-СЃС‚СЂРѕРєР° РґР»СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё Р±Р°Р№С‚-СЃС‚СЂРѕРє
 
-        CommandIndex _0x34 {0x34,               //Командные индексы и значение SID для команд
-                            0, 2, 3,            //0х34, 0х36, 0х37
+        CommandIndex _0x34 {0x34,               //РРЅРґРµРєСЃС‹ Рё SID РґР»СЏ Р·Р°РїСЂРѕСЃРѕРІ 0С…34, 0С…36, 0С…37
+                            0, 2, 3,            
                             0, 1, 2, 3};
         CommandIndex _0x36 {0x36,
                             0, 2, 3,
@@ -18,112 +18,146 @@ byteString emptybyteString {{0,0,0,0,0,0,0,0}}; //Пустая байт-строка для инициал
 
 
 //**************************************************************************************************
-// Procedure ADC_IRQHandler()
+// Procedure byteStringOut()
 //**************************************************************************************************
 
-//* Вывод байт-строки в консоль *//
+// Р’С‹РІРѕРґ Р±Р°Р№С‚-СЃС‚СЂРѕРєРё РІ РєРѕРЅСЃРѕР»СЊ //
+
 void Parse::byteStringOut(byteString Out)
 {
-    for(uint8_t i = 0; i<STRING_LENGTH_BYTE; i++)
-        std::cout<<std::hex<<(int)Out.bytes[i]<<'\t';
-    std::cout<<std::endl;
+    for (uint8_t i = 0; i < STRING_LENGTH_BYTE; i++)
+        std::cout << std::hex << (int) Out.bytes[i] << '\t';
+    std::cout << std::endl;
 }
 
 //**************************************************************************************************
-// Procedure ADC_IRQHandler()
+// Procedure countLength()
 //**************************************************************************************************
 
-//* Считывание длины сообщения из двух байт *//
+// РџРѕРґСЃС‡С‘С‚ РґР»РёРЅС‹ СЃРѕРѕР±С‰РµРЅРёСЏ //
+
 uint16_t Parse::countLength(uint8_t one, uint8_t two)
 {
-    return (uint32_t)((one<<8 | two) & 0xFFF);  //Сдвиг первого байта на байт влево и применение маски, чтобы
-}                                               //убрать первые пол-байта
+    return (uint16_t) ((one << 8 | two) & 0xFFF);  //РЎРІРґРёРі СЃС‚Р°СЂС€РµРіРѕ Р·РЅР°С‡Р°С‰РµРіРѕ Р±Р°Р№С‚Р° РІР»РµРІРѕ РЅР° Р±Р°Р№С‚ Рё РїСЂРёРјРµРЅРµРЅРёРµ РјР°СЃРєРё РґР»СЏ СЃС‚РёСЂР°РЅРёСЏ РїРµСЂРІРѕРіРѕ РїРѕР»-Р±Р°Р№С‚Р°
+}                                               
 
 //**************************************************************************************************
-// Procedure ADC_IRQHandler()
+// Procedure StringToByte()
 //**************************************************************************************************
 
-//* Перевод строки в подстроку *//
+// РџРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё РІ Р±Р°Р№С‚-СЃС‚СЂРѕРєСѓ //
+
 byteString Parse::StringToByte(std::string Input)
 {
-        byteString Output = emptybyteString;
+        byteString Output = emptybyteString;    //РЎРѕР·РґР°С‘Рј РїСѓСЃС‚СѓСЋ СЃС‚СЂРѕРєСѓ
+        
+        uint8_t Count = 0;              //РќРѕРјРµСЂ Р±Р°Р№С‚Р° РІ СЃС‚СЂРѕРєРµ
+        std::string buff = "";          //Р‘СѓС„РµСЂ СЃ РїРѕРґСЃС‚СЂРѕРєРѕР№, РїРѕР»СѓС‡РµРЅРЅРѕР№ СЂР°Р·РґРµР»РµРЅРёРµРј РІС…РѕРґРЅРѕР№ С‚Р°Р±Р°РјРё
 
-        uint8_t Count = 0;
-        std::string buff = "";
-
-        uint8_t cycleLength = Input.size()+1;
-        for(uint8_t i = 0; i<cycleLength; i++)
+        uint8_t cycleLength = Input.size() + 1;         
+        for (uint8_t i = 0; i < cycleLength; i++)       
         {
-            if(Input[i]=='\t' || Input[i]=='\x0')
+            if (Input[i] == '\t' || Input[i] == '\x0')          //Р•СЃР»Рё РІСЃС‚СЂРµС‡Р°РµС‚СЃСЏ С‚Р°Р±РёР»Рё РєРѕРЅРµС† СЃС‚СЂРѕРєРё
             {
-                Output.bytes[Count] = (uint8_t)std::stoi(buff, 0, 16);
-                buff = "";
+                Output.bytes[Count] = (uint8_t) std::stoi(buff, 0, 16); //РџРµСЂРµРІРµСЃС‚Рё РїРѕРґСЃС‚СЂРѕРєСѓ РёР· Р±СѓС„РµСЂР° РІ С€РµСЃС‚РЅР°РґС†Р°С‚РµСЂРёС‡РЅРѕРµ С‡РёСЃР»Рѕ 
+                buff = "";                                              //РћС‡РёСЃС‚РёС‚СЊ Р±СѓС„РµСЂ
                 Count++;
             }
-            buff+=Input[i];
+            buff += Input[i];           //Р‘СѓС„РµСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ РїРѕ РѕРґРЅРѕРјСѓ СЃРёРјРІРѕР»Сѓ
         }
         return Output;
 }
+
+//**************************************************************************************************
+// Procedure IsCommand()
+//**************************************************************************************************
+
+// РџСЂРѕРІРµСЂРєР° РѕРїСЂРµРґРµР»С‘РЅРЅРѕРіРѕ РєРѕРјР°РЅРґРЅС‹Рј РёРЅРґРµРєСЃРѕРј Р±Р°Р№С‚Р° СЃС‚СЂРѕРєРё РЅР° РЅР°Р»РёС‡РёРµ РІ РЅС‘Рј SID //
 
 bool Parse::IsCommand (byteString Input, CommandIndex cmnd)
 {
     return Input.bytes[cmnd.SID] == cmnd.SID_VALUE;
 }
 
-bool Parse::CheckFor_0x34(char* Input, byteString commandString, CommandIndex cmnd)      //Является ли строка началом серии пакетов
+//**************************************************************************************************
+// Procedure CheckFor_0x34()
+//**************************************************************************************************
+
+// РџСЂРѕРІРµСЂРєР° РѕС‚РІРµС‚Р° РїРѕСЃР»Рµ РЅР°С…РѕР¶РґРµРЅРёСЏ РІ СЃС‚СЂРѕРєРµ 0С…34 //
+
+bool Parse::CheckFor_0x34(char* Input, byteString commandString, CommandIndex cmnd) 
 {
 
-    uint16_t msgLength = countLength(commandString.bytes[cmnd.SIZE], commandString.bytes[cmnd.SIZE+1]);       //Задать в CommandIndex длину адреса, чтобы унифицировать для всех команд
-    if(msgLength>6)
-        msgLength = ceil ((msgLength-6)/7) + 3;     //3, т.к. не считаем эту строку, с 30 0 0 0 0 0 0 0
+    uint16_t msgLength = countLength(commandString.bytes[cmnd.SIZE], commandString.bytes[cmnd.SIZE + 1]);     //Р”Р»РёРЅР° РІ Р±Р°Р№С‚Р°С…
+    if (msgLength > 6)          //Р•СЃР»Рё РґР»РёРЅР° РІ Р±Р°Р№С‚Р°С… > 6, С‚Рѕ РїРѕС‚СЂРµР±СѓРµС‚СЃСЏ Р±РѕР»СЊС€Рµ, С‡РµРј РѕРґРЅР° СЃС‚СЂРѕС‡РєР° РЅР° РїРµСЂРµРґР°С‡Сѓ. Р”Р»РёРЅР° РІ СЃС‚СЂРѕРєР°С… СЂР°СЃСЃС‡РёС‚С‹РІР°РµС‚СЃСЏ РїРѕ С„РѕСЂРјСѓР»Рµ
+        msgLength = ceil ((msgLength - 6) / 7) + 3;     //(Р”Р»РёРЅР°_РІ_Р±Р°Р№С‚Р°С… - РєРѕР»РёС‡РµСЃС‚РІРѕ_РїРѕР»РµР·РЅС‹С…_РґР°РЅРЅС‹С…_РІ_РїРµСЂРІРѕР№_СЃС‚СЂРѕРєРµ)/РєРѕР»РёС‡РµСЃС‚РІРѕ_РїРѕР»РµР·РЅС‹С…_Р±Р°Р№С‚_РІ_РѕСЃС‚Р°Р»СЊРЅС‹С…_СЃС‚СЂРѕРєР°С… + РЅРµСѓС‡С‚С‘РЅРЅС‹Рµ_СЃС‚СЂРѕРєРё
     else
-        msgLength = 1;
+        msgLength = 1;          
 
-    Input+= msgLength*STRING_LENGTH_ASCII;
-    byteString responceString = StringToByte(Input);
+    Input += msgLength * STRING_LENGTH_ASCII;   //msgLength РіРѕРІРѕСЂРёС‚ РЅР° СЃРєРѕР»СЊРєРѕ РёРЅРґРµРєСЃ СЃС‚СЂРѕРєРё СЃ РѕС‚РІРµС‚РѕРј Р±РѕР»СЊС€Рµ РёРЅРґРµРєСЃР° РІС…РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё, СЃРІРґРёРіР°РµРјСЃСЏ РЅР° СЃС‚РѕР»СЊРєРѕ СЃС‚СЂРѕРє
+    byteString responceString = StringToByte(Input);    
 
-    if(responceString.bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE+0x40 &&
-            responceString.bytes[cmnd.SIZE]<7)
-            std::cout<<"SESSION\n";
-
-    return (responceString.bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE+0x40 &&
-            responceString.bytes[cmnd.SIZE]<7);
+    return (responceString.bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE + 0x40 &&         //Р•СЃР»Рё РѕС‚РІРµС‚ РЅР° 0С…40 Р±РѕР»СЊС€Рµ Рё РґР»РёРЅР° РѕС‚РІРµС‚Р° РјРµРЅСЊС€Рµ РґР»РёРЅС‹ СЃС‚СЂРѕРєРё
+            responceString.bytes[cmnd.SIZE] < 7);
 }
 
-bool Parse::CheckFor_0x36(byteString* commandString, CommandIndex cmnd)      //Является ли строка началом серии пакетов
+//**************************************************************************************************
+// Procedure CheckFor_0x36()
+//**************************************************************************************************
+
+// РђРЅР°Р»РѕРіРёС‡РЅР°СЏ РїСЂРѕРІРµСЂРєР° РѕС‚РІРµС‚Р° РїРѕСЃР»Рµ РЅР°С…РѕР¶РґРµРЅРёСЏ РІ СЃС‚СЂРѕРєРµ 0С…36 //
+
+bool Parse::CheckFor_0x36(byteString* commandString, CommandIndex cmnd)      
 {
-    uint16_t Length = countLength(commandString->bytes[cmnd.SIZE], commandString->bytes[cmnd.SIZE+1]);
-    uint16_t msgLength = 0;       //Задать в CommandIndex длину адреса, чтобы унифицировать для всех команд
-    if(Length>6)
-        msgLength = ceil ((Length-6)/7) + 3;     //3, т.к. не считаем эту строку, с 30 0 0 0 0 0 0 0
+    uint16_t Length = countLength(commandString->bytes[cmnd.SIZE], commandString->bytes[cmnd.SIZE + 1]);
+    uint16_t msgLength = 0;       
+    if (Length > 6)
+        msgLength = ceil ((Length - 6) / 7) + 3;     
     else
         msgLength = 1;
 
-    if((Length - 6) % 7 == 0)
+    if ((Length - 6) % 7 == 0)  //Р•СЃР»Рё РїРѕСЃР»РµРґРЅСЏСЏ СЃС‚СЂРѕРєР° РїР°РєРµС‚Р° РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅР° РїРѕР»РµР·РЅС‹РјРё Р±Р°Р№С‚Р°РјРё, С‚Рѕ РЅСѓР¶РЅРѕ СЃРґРІРёРЅСѓС‚СЊСЃСЏ РЅР° РѕРґРЅСѓ СЃС‚СЂРѕРєСѓ РІРІРµСЂС…
         msgLength -= 1;
 
-                      //Ради экономии памяти сдвигаем командную строку на количество строк до строки с ответом
-    byteString* responceString = commandString + msgLength + 1;       //Создаём вторую байт-строку, что на одну ниже строки с ответом т.к. обычно там находится
-                                                        //положительный ответ на запрос
+    byteString* responceString = commandString + msgLength + 1;                                                      
     byteString* subResponceString = responceString - 1;
+        
     return (responceString->bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE + 0x40 &&
-            subResponceString->bytes[cmnd.SID_RESPONCE] == 0x7F);   //запросом подождать
+            subResponceString->bytes[cmnd.SID_RESPONCE] == 0x7F);   //Р•СЃР»Рё РїСЂРёСЃСѓС‚СЃС‚РІСѓРµС‚ СЃРІСЏР·РєР°-РѕС‚РІРµС‚ РЅР° 0С…36
 }
+
+//**************************************************************************************************
+// Procedure CheckFor_0x76()
+//**************************************************************************************************
+
+// РџСЂРѕРІРµСЂРєР° СЃС‚СЂРѕРєРё РЅР° РєРѕРЅРµС† РїР°РєРµС‚Р° //
 
 bool Parse::CheckFor_0x76 (byteString* responceString, CommandIndex cmnd)
 {
     byteString* subResponceString = responceString + 1;
-    return responceString->bytes[cmnd.SID_RESPONCE] == 0x7F &&
-           subResponceString->bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE+0x40;
+    return responceString->bytes[cmnd.SID_RESPONCE] == 0x7F &&          //Р•СЃР»Рё СЃС‚СЂРѕРєР° СЏРІР»СЏРµС‚СЃСЏ Р·Р°РїСЂРѕСЃРѕ РїРѕРґРѕР¶РґР°С‚СЊ, Р° СЃР»РµРґСѓСЋС‰Р°СЏ - РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј РѕС‚РІРµС‚РѕРј
+           subResponceString->bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE + 0x40;
 }
 
-bool Parse::CheckFor_0x37 (char* Input, byteString commandString, CommandIndex cmnd)     //Является ли концом серии пакетов
+//**************************************************************************************************
+// Procedure CheckFor_0x37()
+//**************************************************************************************************
+
+// РџСЂРѕРІРµСЂРєР° РѕС‚РІРµС‚Р° РїРѕСЃР»Рµ РЅР°С…РѕР¶РґРµРЅРёСЏ РІ СЃС‚СЂРѕРєРµ 0С…37 //
+
+bool Parse::CheckFor_0x37 (char* Input, byteString commandString, CommandIndex cmnd)
 {
     byteString responceString = StringToByte(Input+STRING_LENGTH_ASCII);
 
-    return responceString.bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE+0x40 &&
-    responceString.bytes[cmnd.SIZE]<3;
+    return responceString.bytes[cmnd.SID_RESPONCE] == cmnd.SID_VALUE + 0x40 &&
+    responceString.bytes[cmnd.SIZE] < 3;                        //Р”Р»РёРЅР° РїРµСЂРµРґР°С‡Рё РІСЃРµРіРґР° РјРµРЅСЊС€Рµ С‚СЂС‘С…, РЅСѓР¶РЅРѕ, РїРѕСЃРєРѕР»СЊРєСѓ РјСѓСЃРѕСЂ РјРѕР¶РµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ С„РѕСЂРјР°С‚Сѓ РєРѕРјР°РЅРґС‹
 }
+
+//**************************************************************************************************
+// Procedure FromTxtTobyteString()
+//**************************************************************************************************
+
+// Р’С‹РґРµР»РµРЅРёРµ РёР· С„Р°Р№Р»Р° *.txt СЃС‚СЂСѓРєС‚СѓСЂС‹ 0С…34...0С…37, РїРѕРјРµС‰РµРЅРёРµ РµС‘ РІ Р±СѓС„РµСЂ, РїРµСЂРµРґР°С‡Р° РєРѕР»РёС‡РµСЃС‚РІР° РёСЃС…РѕРґРЅС‹С… СЃС‚СЂРѕРє С‡РµСЂРµР· Р»РµРІРѕСЃС‚РѕСЂРѕРЅРЅСЋСЋ СЃСЃС‹Р»РєСѓ //
 
 byteString* Parse::FromTxtTobyteString(const char* Path, uint32_t& DataStringNumber)
 {
@@ -135,42 +169,45 @@ byteString* Parse::FromTxtTobyteString(const char* Path, uint32_t& DataStringNum
 
     uint32_t StringNumber = 0;
 
-    while(File.getline(BufferPtr, STRING_LENGTH_ASCII, '\n'))
+    while (File.getline(BufferPtr, STRING_LENGTH_ASCII, '\n'))
     {
-        BufferPtr+=STRING_LENGTH_ASCII;
+        BufferPtr += STRING_LENGTH_ASCII;
         StringNumber++;
     }
     File.close();
 
-    byteString* Data = new byteString[StringNumber] {emptybyteString};
+    byteString* Data = new byteString[StringNumber];
+    for (uint32_t i = 0; i < StringNumber; i++)
+            Data[i] = {emptybyteString};
+        
     byteString tempData {emptybyteString};
-    BufferPtr=Buffer;
+    BufferPtr = Buffer;
 
     bool IsDataTransferActive = false;
     uint32_t countData = 0;
 
-    for(uint32_t i = 0; i<StringNumber; i++)
+    for (uint32_t i = 0; i<StringNumber; i++)
     {
         tempData = StringToByte(BufferPtr);
-        if(!IsDataTransferActive)
+        if (!IsDataTransferActive)
         {
-            if(IsCommand(tempData, _0x34))
+            if (IsCommand(tempData, _0x34))
                 IsDataTransferActive = CheckFor_0x34(BufferPtr, tempData, _0x34);
         }
         else
         {
-            if(IsCommand(tempData, _0x37))
+            if (IsCommand(tempData, _0x37))
                 IsDataTransferActive = !CheckFor_0x37(BufferPtr, tempData, _0x37);
         }
 
 
-        if(IsDataTransferActive)
+        if (IsDataTransferActive)
         {
             Data[countData] = tempData;
             countData++;
         }
 
-        BufferPtr+=STRING_LENGTH_ASCII;
+        BufferPtr += STRING_LENGTH_ASCII;
     }
 
     delete Buffer;
@@ -178,6 +215,12 @@ byteString* Parse::FromTxtTobyteString(const char* Path, uint32_t& DataStringNum
     DataStringNumber = countData;
     return Data;
 }
+
+//**************************************************************************************************
+// Procedure FromTxtToBin()
+//**************************************************************************************************
+
+// Р’С‹Р±РѕСЂ РїРѕР»РµР·РЅС‹С… РґР°РЅРЅС‹С…РёР·СЃС‚СЂСѓРєС‚СѓСЂС‹ 0С…34...0С…37 //
 
 int Parse::FromTxtToBin(const char* TxtPath, const char* BinPath)
 {
@@ -194,28 +237,27 @@ int Parse::FromTxtToBin(const char* TxtPath, const char* BinPath)
     FILE* out;
     out = fopen(BinPath, "wb+");
 
-    for(uint32_t i = 0; i<DataStrLen; i++)
+    for (uint32_t i = 0; i < DataStrLen; i++)
     {
-        if(!IsDataTransferActive)
+        if (!IsDataTransferActive)
         {
-            if(IsCommand(*DataPtr, _0x36))
+            if (IsCommand(*DataPtr, _0x36))
                 IsDataTransferActive = CheckFor_0x36(DataPtr, _0x36);
-            if(IsDataTransferActive)
+            if (IsDataTransferActive)
             {
                 StringCount = 0;
                 PackageCount = 0;
-                PackageLength = countLength(DataPtr->bytes[_0x36.SIZE], DataPtr->bytes[_0x36.SIZE+1]);
-                std::cout<<"SIZE: "<<PackageLength<<std::endl;
+                PackageLength = countLength(DataPtr->bytes[_0x36.SIZE], DataPtr->bytes[_0x36.SIZE + 1]);
             }
         }
         else
         {
-            if(DataPtr->bytes[0]<STRING_LENGTH_BYTE)
+            if (DataPtr->bytes[0] < STRING_LENGTH_BYTE)
                 IsDataTransferActive = !CheckFor_0x76(DataPtr, _0x37);
         }
 
 
-        if(IsDataTransferActive && PackageCount < PackageLength)
+        if (IsDataTransferActive && PackageCount < PackageLength)
         {
             uint8_t index = 0;
 
@@ -234,12 +276,12 @@ int Parse::FromTxtToBin(const char* TxtPath, const char* BinPath)
 
             for(; index < STRING_LENGTH_BYTE; index++)
             {
-                if(PackageCount + 2 == PackageLength)         //Нумерация текущих пакетов начинается с нуля, общего количества - с единицы
-                {                                           //Потому если следущая строка является концом пакета, то закончить передачу
+                if(PackageCount + 2 == PackageLength)         //ГЌГіГ¬ГҐГ°Г Г¶ГЁГї ГІГҐГЄГіГ№ГЁГµ ГЇГ ГЄГҐГІГ®Гў Г­Г Г·ГЁГ­Г ГҐГІГ±Гї Г± Г­ГіГ«Гї, Г®ГЎГ№ГҐГЈГ® ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ  - Г± ГҐГ¤ГЁГ­ГЁГ¶Г»
+                {                                           //ГЏГ®ГІГ®Г¬Гі ГҐГ±Г«ГЁ Г±Г«ГҐГ¤ГіГ№Г Гї Г±ГІГ°Г®ГЄГ  ГїГўГ«ГїГҐГІГ±Гї ГЄГ®Г­Г¶Г®Г¬ ГЇГ ГЄГҐГІГ , ГІГ® Г§Г ГЄГ®Г­Г·ГЁГІГј ГЇГҐГ°ГҐГ¤Г Г·Гі
                     IsDataTransferActive = false;
                     break;
                 }
-                fwrite(&DataPtr->bytes[index], 1, 1, out);  //Передача - помещение полезных байтов в бинарный файл
+                fwrite(&DataPtr->bytes[index], 1, 1, out);  //ГЏГҐГ°ГҐГ¤Г Г·Г  - ГЇГ®Г¬ГҐГ№ГҐГ­ГЁГҐ ГЇГ®Г«ГҐГ§Г­Г»Гµ ГЎГ Г©ГІГ®Гў Гў ГЎГЁГ­Г Г°Г­Г»Г© ГґГ Г©Г«
                 PackageCount++;
             }
 
