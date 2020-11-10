@@ -19,7 +19,7 @@ path = ''
 
 root = Tk()                 #Создаём объект окна
 root.title("Parser")        #Название
-root.resizable(True, True)  #Масштабируется ли по х, по у
+root.resizable(False, False)  #Масштабируется ли по х, по у
 
 prods = ['TRW', 'Bosch', 'Delphi']  #Список производителей
 servs = ['Upload', 'Download']      #Список режимов
