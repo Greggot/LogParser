@@ -1,7 +1,9 @@
 # Запуск
 
 make objects
+
 make ParserVolvo
+
 python GUI.py
 
 # LogParser EMS Volvo
