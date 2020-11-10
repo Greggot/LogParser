@@ -40,16 +40,18 @@ DownChoose = Frame(ChooseFrame, borderwidth = 0, highlightthickness = 0)        
 DownChoose.pack(side = TOP, pady = 5)
 
 ttk.Label(UpperChoose, text = 'Producer:').pack(side = LEFT)        # Надпись "Производитель"
-ttk.Label(DownChoose, text='Service:').pack(side = LEFT, pady = 5)  # Надпись "Режим"
+ttk.Label(DownChoose, text='Service:    ').pack(side = LEFT, pady = 5)  # Надпись "Режим"
 
 ttk.Combobox(UpperChoose, values = prods, state = "readonly").pack(side = RIGHT, padx = 10)             # Выбор производителя
-ttk.Combobox(DownChoose, values = servs, state = "readonly").pack(side = RIGHT, pady = 5, padx = 17)    # Выбор режима
+ttk.Combobox(DownChoose, values = servs, state = "readonly").pack(side = RIGHT, pady = 5, padx = 10)    # Выбор режима
 
 SelectFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)     #Рамка выбора файла
 SelectFrame.pack(side = BOTTOM, pady = 5)
 
-PathLabel = Label(SelectFrame, text = path)         # Надпись, хранящая путь к файлу
-PathLabel.pack(side = RIGHT, pady = 5, padx = 5)
+path = StringVar()
+
+PathEntry = Entry(SelectFrame, textvariable = path, width=100)         # Тектовое поле, хранящее путь к файлу
+PathEntry.pack(side = BOTTOM, pady = 5, padx = 5)
 
 #**************************************************************************************************
 # Procedure setInputLog()
@@ -58,9 +60,10 @@ PathLabel.pack(side = RIGHT, pady = 5, padx = 5)
 # Считывание пути к входному файлу  #
 
 def setInputLog():
-    path = askopenfilename(
+    Path = askopenfilename(
         filetypes=((".txt files", "*.txt"),))   # Открывать только файлы формата .txt
-    PathLabel.config(text = path)           # Поменять надпись, хранящую путь к файлу
+    PathEntry.delete(0, END)                    # Стереть старый путь
+    PathEntry.insert(0, Path)                   # Вставить новый
 
 SelectFileButton = Button(SelectFrame, text = "Select a file", command = setInputLog)   # Кнопка, считывающая путь к файлу
 SelectFileButton.pack(side = TOP, pady = 5, padx = 5)
@@ -72,8 +75,8 @@ SelectFileButton.pack(side = TOP, pady = 5, padx = 5)
 # Запускает из консоли программу ParseVolvo #
 
 def Parse():
-    outputPath = 'C' + PathLabel["text"][1:len(path)-3] + 'bin'     #Путь к бинарнику будет тем же, что и уисходного файла. Отличаться будет только формат
-    proc = subprocess.Popen('ParserVolvo' + ' ' + PathLabel["text"] + ' ' + outputPath,  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
+    outputPath = path.get()[0:len(path.get())-3] + 'bin'     #Путь к бинарнику будет тем же, что и уисходного файла. Отличаться будет только формат
+    proc = subprocess.Popen('ParserVolvo' + ' ' + path.get() + ' ' + outputPath,  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
     proc.wait()     # Ожидание конца выполнения
     if os.path.isfile(outputPath):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
         messagebox.showinfo('Success', 'File has been generated at ' + outputPath)  # Сообщение с информацией об успехе
