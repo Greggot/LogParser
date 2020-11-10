@@ -1,6 +1,7 @@
 CC = g++
 OBJ = *.o
 CPP = *.cpp 
+CLEAR = rm -f
 PROGRAM = ParserVolvo
 
 $(PROGRAM): $(OBJ)
@@ -8,6 +9,11 @@ $(PROGRAM): $(OBJ)
 
 $(OBJ) : $(CPP) 
 	$(CC) -c $@ $^
+	
+objects : main.cpp Parse.cpp
+	$(CC) -c main.o main.cpp
+	$(CC) -c Parse.o Parse.cpp
+
 clear:
-	rm -f main.o
-	rm -f Parse.o
+	$(CLEAR) main.o
+	$(CLEAR) Parse.o
