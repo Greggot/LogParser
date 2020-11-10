@@ -1,68 +1,62 @@
-#**************************************************************************************************
-# Includes
-#**************************************************************************************************
-
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
+import subprocess
 import os
 
-#**************************************************************************************************
-# Definitions
-#**************************************************************************************************
+root = Tk()
+root.title("Parser")
+root.geometry('640x300+200+100')
+root.resizable(False, False)
+
+prods = ['TRW', 'Bosch', 'Delphi']
+servs = ['Upload', 'Download']
 
 path = ''
 
-#**************************************************************************************************
-# Window Structures (Widgets)
-#**************************************************************************************************
+SettingsFrame = ttk.LabelFrame(root, text = 'Settings', width = 300)
+SettingsFrame.pack(fill = X)
 
-root = Tk()                 #Создаём объект окна
-root.title("Parser")        #Название
-root.resizable(False, False)  #Масштабируется ли по х, по у
+ChooseFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)
+ChooseFrame.pack(side = TOP, pady = 5)
 
-prods = ['TRW', 'Bosch', 'Delphi']  #Список производителей
-servs = ['Upload', 'Download']      #Список режимов
+UpperChoose = Frame(ChooseFrame, borderwidth = 0, highlightthickness = 0)
+UpperChoose.pack(side = TOP)
 
-SettingsFrame = ttk.LabelFrame(root, text = 'Settings')   #Фрейм для объектов настройки, на нём помещаются виджеты
-SettingsFrame.grid(column = 0, row = 0, sticky = 'nw')
+DownChoose = Frame(ChooseFrame, borderwidth = 0, highlightthickness = 0)
+DownChoose.pack(side = TOP, pady = 5)
 
-ttk.Label(SettingsFrame, text='Producer:').grid(column = 0, row = 0, sticky = 'w', padx = 3)         #Надпись "Производители"
-ttk.Label(SettingsFrame, text='Service:').grid(column = 0, row = 1, sticky = 'w', padx = 3, pady = 3)  #Надпись "Сервисы"
+ttk.Label(UpperChoose, text = 'Producer:').pack(side = LEFT)
+ttk.Label(DownChoose, text='Service:').pack(side = LEFT, pady = 5)
 
-ttk.Combobox(SettingsFrame, values = prods, state = "readonly").grid(column = 1, row = 0, sticky = 'w')           #Выбор производителей
-ttk.Combobox(SettingsFrame, values = servs, state = "readonly").grid(column = 1, row = 1, sticky = 'w', pady = 3)   #Выбор режимов
+ttk.Combobox(UpperChoose, values = prods, state = "readonly").pack(side = RIGHT, padx = 10)
+ttk.Combobox(DownChoose, values = servs, state = "readonly").pack(side = RIGHT, pady = 5, padx = 17)
 
+SelectFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)
+SelectFrame.pack(side = BOTTOM, pady = 5)
 
-ttk.Label(SettingsFrame, text = '*.txt files only').grid(column = 0, row = 4, sticky = 'w', padx = 3) 
-PathLabel = Label(SettingsFrame, text=path)         #Надпись, отображающая путь файла
-PathLabel.grid(column = 1, row = 3, sticky='w', pady = 5)
-
-#**************************************************************************************************
-# Procedure setInputLog()
-#**************************************************************************************************
-
-# Считывание пути к входному файлу  #
+PathLabel = Label(SelectFrame, text = path)
+PathLabel.pack(side = RIGHT, pady = 5, padx = 5)
 
 def setInputLog():
-    path = askopenfilename()
-    PathLabel.config(text = path)   #Изменить текст надписи, отображающей путь файла
+    path = askopenfilename(
+        filetypes=((".txt files", "*.txt"),))
+    PathLabel.config(text = path)
 
-SelectFileButton = Button(SettingsFrame, text = "Select a file", command = setInputLog, pady = 5)     #Кнопка для выбора файла, запускает setInputLog()
-SelectFileButton.grid(column = 0, row = 3, sticky = 'w')
-
-
-#**************************************************************************************************
-# Procedure Parse()
-#**************************************************************************************************
-
-# Запускает из консоли программу ParseVolvo #
+SelectFileButton = Button(SelectFrame, text = "Select a file", command = setInputLog)
+SelectFileButton.pack(side = TOP, pady = 5, padx = 5)
 
 def Parse():
-    outputPath = 'C' + PathLabel["text"][1:len(path) - 3] + 'bin'   #Выходной файл будет находиться там же, что и входной, только иметь другое разрешение
-    os.system('ParserVolvo' + ' ' + PathLabel["text"] + ' ' + outputPath)   #запустить через терминал парсер
+    outputPath = 'C' + PathLabel["text"][1:len(path)-3] + 'bin'
+    proc = subprocess.Popen('ParserVolvo' + ' ' + PathLabel["text"] + ' ' + outputPath,  creationflags = subprocess.SW_HIDE, shell = True)
+    proc.wait()
+    if os.path.isfile(outputPath):
+        messagebox.showinfo('Success', 'File has been generated at ' + outputPath)
+    else:
+        messagebox.showerror('Error', 'File hasn\'t been generated!')
 
-message_button = Button(root, text = "Filter data", command = Parse)    #Кнопка, выполняющая Parse()
-message_button.grid(column = 0, row = 2, sticky = 'se', padx = 3, pady = 3)
+message_button = Button(root, text = "Filter data", command = Parse)
+message_button.pack()
 
-root.mainloop()         #Функция, обновляющая виджеты на экране
+root.mainloop()
