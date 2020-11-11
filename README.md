@@ -4,7 +4,7 @@ make objects
 
 make ParserVolvo
 
-python GUI.py
+make Parser
 
 # LogParser EMS Volvo
 
