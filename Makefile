@@ -22,3 +22,6 @@ objects : main.cpp Parse.cpp
 clear:
 	$(CLEAR) main.o
 	$(CLEAR) Parse.o
+	$(CLEAR) gui.o
+	$(CLEAR) Parser.exe
+	$(CLEAR) ParserVolvo.exe
