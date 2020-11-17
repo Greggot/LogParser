@@ -32,7 +32,30 @@ struct byteString           //Байт-строка
     uint8_t bytes[STRING_LENGTH_BYTE];
 };
 
-class Parse
+class Parser
+{
+    protected:
+
+        //**************************************************************************************************
+        // Declarations
+        //**************************************************************************************************
+        static void byteStringOut(byteString Out);
+        static byteString StringToByte(std::string Input);
+        static bool IsCommand (byteString Input, CommandIndex cmnd);
+
+};
+
+class ParserDAF : public Parser
+{
+    private:
+        static byteString* FromTxtToByte(const char* Path, uint32_t& DataLength);
+        static bool checkForReset(byteString responceString, CommandIndex cmnd);
+        static bool checkFor0x23(byteString responceString, CommandIndex cmnd);
+    public:
+        static int FromTxtToBin(const char* TxtPath, const char* BinPath);
+};
+
+class ParserVolvo : public Parser
 {
     private:
 
@@ -40,11 +63,7 @@ class Parse
         // Declarations
         //**************************************************************************************************
 
-        static void byteStringOut(byteString Out);
-
         static uint16_t countLength(uint8_t one, uint8_t two);
-        static byteString StringToByte(std::string Input);
-        static bool IsCommand (byteString Input, CommandIndex cmnd);
         static bool CheckFor_0x34(char* Input, byteString commandString, CommandIndex cmnd);
         static bool CheckFor_0x36(byteString* commandString, CommandIndex cmnd);
         static bool CheckFor_0x76 (byteString* commandString, CommandIndex cmnd);

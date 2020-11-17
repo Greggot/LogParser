@@ -1,27 +1,25 @@
 CC = g++
+PARSE_DAF = ParserDAF
+PARSE_TRW = ParserTRW
 OBJ = *.o
-CPP = *.cpp 
+CPP = *.cpp
 CLEAR = rm -f
-PROGRAM = ParserVolvo
-MAIN_PROGRAM = Parser
 
-$(MAIN_PROGRAM) :  gui.o
-	$(CC) -o $@ $^
-	
-$(PROGRAM) : $(OBJ)
-	$(CC) -o $@ $^
+$(PARSE_DAF) : $(OBJ)
+	$(CC) -o $@ mainDAF.cpp ParserDAF.cpp Parse.cpp 
+
+$(PARSE_TRW) : $(OBJ)
+	$(CC) -o $@ mainTRW.cpp ParserVolvo.cpp Parse.cpp 
 
 $(OBJ) : $(CPP) 
 	$(CC) -c $@ $^
-	
-objects : main.cpp Parse.cpp
-	$(CC) main.cpp -c
-	$(CC) Parse.cpp -c
-	$(CC) gui.cpp -c
 
-clear:
-	$(CLEAR) main.o
-	$(CLEAR) Parse.o
-	$(CLEAR) gui.o
-	$(CLEAR) Parser.exe
-	$(CLEAR) ParserVolvo.exe
+objects : 
+	$(CC) mainTRW.cpp -c
+	$(CC) mainDAF.cpp -c
+	$(CC) ParserVolvo.cpp -c
+	$(CC) ParserDAF.cpp -c
+	$(CC) Parse.cpp -c
+
+clear :
+	$(CLEAR) $(OBJ)
