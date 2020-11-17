@@ -196,6 +196,7 @@ int ParserVolvo::FromTxtToBin(const char* TxtPath, const char* BinPath)
                 StringCount = 0;
                 PackageCount = 0;
                 PackageLength = countLength(DataPtr->bytes[_0x36.SIZE], DataPtr->bytes[_0x36.SIZE + 1]);
+                std::cout << "SIZE: " << PackageLength << std::endl;
             }
         }
         else    //Если идёт передача пакета, то проверять на конец пакета 
