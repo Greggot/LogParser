@@ -2,12 +2,11 @@
 
 make objects
 
-make ParserVolvo
+make ParserTRW
 
-make Parser
+make ParserDAF
 
-# LogParser EMS Volvo
+# LogParser TRW & DAF
 
-Класс Parse состоит из публичной функции, вызываеой извне. К ней прилагается кипа закрытых функций, что выбирают из тектового файла структуры сессий.
-
-Само приложение принимает два параметра - путь к текстовому файлу и путь к выходному бинарному файлу. Оно вызывается из скрипта GUI.py при нажатии на кнопку "Filter Data".
+Приложеня фильтруют данные из логов формата .txt. Запуск:
+`ParserTRW <./PathToLog/Input.txt> <./PathToBin/Output.bin>` или `ParserDAF <./PathToLog/Input.txt> <./PathToBin/Output.bin>`.
