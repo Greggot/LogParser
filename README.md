@@ -1,10 +1,12 @@
 # Запуск
 
-make objects
+`make objects`
 
-make ParserTRW
+`make ParserDelphiReadMemoryByAddress`
 
-make ParserDAF
+`make ParserTRWTransferData`
+
+`make Parse`
 
 # LogParser TRW & DAF
 
