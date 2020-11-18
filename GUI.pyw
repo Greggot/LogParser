@@ -6,6 +6,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import asksaveasfilename
 import subprocess
 import os
 
@@ -24,8 +25,8 @@ root.title("Parser")                # Название окна
 root.geometry('640x300+200+100')    # Размеры окна и расстояние от краёв экрана
 root.resizable(False, False)        # Запрет на изменение размеров окна
 
-prods = ['TRW', 'Bosch', 'DAF']  # Список производителей
-servs = ['Upload', 'Download']      # Список режимов
+prods = ['Delphi', 'TRW']  # Список производителей
+servs = {'Delphi' : 'ReadMemoryByAddress', 'TRW' : 'TransferData'}
 
 SettingsFrame = ttk.LabelFrame(root, text = 'Settings', width = 300)            # Рамка, внутри которой находится настройки
 SettingsFrame.pack(fill = X)
@@ -44,8 +45,16 @@ ttk.Label(DownChoose, text='Service:    ').pack(side = LEFT, pady = 5)  # Над
 
 ProdBox = ttk.Combobox(UpperChoose, values = prods, state = "readonly")             # Выбор производителя
 ProdBox.pack(side = RIGHT, padx = 10)
-ServBox = ttk.Combobox(DownChoose, values = servs, state = "readonly")    # Выбор режима
+ServBox = ttk.Combobox(DownChoose, values = None, state = "readonly")    # Выбор режима
 ServBox.pack(side = RIGHT, pady = 5, padx = 10)
+ServBox.set("Select servise")
+
+def ServsChange(event):
+    temp = servs[ProdBox.get()]
+    ServBox.set("Select servise")
+    ServBox['values'] = temp
+    
+ProdBox.bind("<<ComboboxSelected>>", ServsChange)
 
 SelectFrame = Frame(SettingsFrame, borderwidth = 0, highlightthickness = 0)     #Рамка выбора файла
 SelectFrame.pack(side = BOTTOM, pady = 5)
@@ -77,14 +86,15 @@ SelectFileButton.pack(side = TOP, pady = 5, padx = 5)
 # Запускает из консоли программу ParseVolvo #
 
 def Parse():
-    outputPath = path.get()[0:len(path.get())-3] + 'bin'     #Путь к бинарнику будет тем же, что и уисходного файла. Отличаться будет только формат
-    proc = subprocess.Popen('Parser' + ProdBox.get() + ' ' + path.get() + ' ' + outputPath,  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
-    print ('Parser' + ProdBox.get() + ' ' + path.get() + ' ' + outputPath)
-    proc.wait()     # Ожидание конца выполнения
-    if os.path.isfile(outputPath):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
-        messagebox.showinfo('Success', 'File has been generated at ' + outputPath)  # Сообщение с информацией об успехе
-    else:
-        messagebox.showerror('Error', 'File hasn\'t been generated!')   # Сообщение-ошибка
+    outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])
+    if(outputPath != ''):
+        proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + path.get() + ' ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
+        print('Parser' + ProdBox.get() + ServBox.get() + ' ' + path.get() + ' ' + outputPath + '.bin')
+        proc.wait()     # Ожидание конца выполнения
+        if os.path.isfile(outputPath + '.bin'):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
+            messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin')  # Сообщение с информацией об успехе
+        else:
+            messagebox.showerror('Error', 'File hasn\'t been generated!')   # Сообщение-ошибка
 
 message_button = Button(root, text = "Filter data", command = Parse)    # Кнопка, запускающая Parse()
 message_button.pack()

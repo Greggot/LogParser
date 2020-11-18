@@ -1,6 +1,6 @@
 CC = g++
-PARSE_DAF = ParserDAF
-PARSE_TRW = ParserTRW
+PARSE_DAF = ParserDelphiReadMemoryByAddress
+PARSE_VOLVO = ParserTRWTransferData
 PARSE = Parse
 OBJ = *.o
 CPP = *.cpp
@@ -12,14 +12,14 @@ $(PARSE) : mainParser.o
 $(PARSE_DAF) : $(OBJ)
 	$(CC) -o $@ mainDAF.cpp ParserDAF.cpp Parse.cpp 
 
-$(PARSE_TRW) : $(OBJ)
-	$(CC) -o $@ mainTRW.cpp ParserVolvo.cpp Parse.cpp 
+$(PARSE_VOLVO) : $(OBJ)
+	$(CC) -o $@ mainVolvo.cpp ParserVolvo.cpp Parse.cpp 
 
 $(OBJ) : $(CPP) 
 	$(CC) -c $@ $^
 
 objects : 
-	$(CC) mainTRW.cpp -c
+	$(CC) mainVolvo.cpp -c
 	$(CC) mainDAF.cpp -c
 	$(CC) mainParser.cpp -c
 	$(CC) ParserVolvo.cpp -c

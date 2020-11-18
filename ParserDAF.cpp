@@ -88,7 +88,7 @@ byteString* ParserDAF::FromTxtToByte(const char* Path, uint32_t& DataLength)
         BuffPtr += STRING_LENGTH_ASCII;
     }
 
-    //delete Buffer;
+    delete Buffer;
 
     DataLength = dataCount;
     return Data;
@@ -104,7 +104,6 @@ int ParserDAF :: FromTxtToBin(const char* TxtPath, const char* BinPath)
 {
     uint32_t DataLength = 0;
     byteString* byteData = FromTxtToByte(TxtPath, DataLength);
-    byteString* DataPtr = byteData;
 
     uint32_t PackageLength = 0;
     uint32_t PackageCount = 0;
@@ -164,7 +163,7 @@ int ParserDAF :: FromTxtToBin(const char* TxtPath, const char* BinPath)
         }
     }
 
-   // delete byteData;
+    delete byteData;
 
     return 0;
 }
