@@ -1,10 +1,10 @@
 CC = g++
-PROGRAM = FromLogToTxt
+PROGRAM = LogParser
 OBJ = *.o
 
 $(PARSE_DAF) : $(OBJ)
-	$(CC) -o $@ $^
+	$(CC) -o $@ main.o LogParser.o
 
 obj :
 	$(CC) -c main.cpp
-	$(CC) -c WaitForPythonWin.cpp
+	$(CC) -c LogParser.cpp
