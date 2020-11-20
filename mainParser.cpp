@@ -1,11 +1,20 @@
+//**************************************************************************************************
+// Includes
+//**************************************************************************************************
 
 #include <windows.h>
 #include <string>
 
-int WINAPI WinMain (HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nCmdShow)  /*стартовая функция, создающая главное окно WinMain() */
+//**************************************************************************************************
+// Procedure main() 
+//**************************************************************************************************
+
+//   Запустить срипт GUI.pyw   //
+
+int WINAPI WinMain (HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nCmdShow)  // Функция на случай отсутствия ассоциаци с файлами .pyw
 {
-	ShowWindow(GetConsoleWindow(),SW_HIDE);
-	system("pythonw GUI.pyw");
+	ShowWindow(GetConsoleWindow(),SW_HIDE);		
+	system("pythonw GUI.pyw");		// .pyw - расширение для скриптов, запускающихся без консоли 
 	
 	return 0;
 }

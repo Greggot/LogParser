@@ -8,12 +8,13 @@
 // Procedure main() 
 //**************************************************************************************************
 
-//   Отпарсить лог DAF   //
-
+//   Вывести в ./temp/ таблицу и список ID    //
 int main(int argc, char *argv[])
-{
-    if(ParserDAF::FromTxtToBin(argv[1], argv[2]))   //Первый аргумент - путь к файлу.txt, Второй - путь к файлу.bin
-        exit(1);
+{  
+    LogParser Log (argv[1]);
+
+    Log.outputIDIntoFile();
+    Log.outputTableIntoFile();
 
     return 0;
 }
