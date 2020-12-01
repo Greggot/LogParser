@@ -58,10 +58,17 @@ struct dataString          // Структура поленой информац
 
 class Parser        // Шаблон, от которого наследуются остальные парсеры
 {
-    protected:       
-        static void byteStringOut(byteString Out);
-        static byteString StringToByte(std::string Input);
-        static bool IsCommand (byteString Input, CommandIndex cmnd);
+    public:       
+        static void byteStringOut(byteString Out);  // Console outputs
+        static void dataStringOut(dataString Out);
+        static void SPNDataOut(SPNData Out);
+
+        static char* ReadFile(const char* path, uint32_t& fileLength);  // text file input
+        static dataString* ReadDataString(const char* path, char DividionSymbol, uint8_t timePos, uint8_t IDPos, uint8_t dataLenPos, uint8_t dataPos, uint32_t& size);
+        
+        static byteString StringToByte(std::string Input);      // String to struct convertation
+        static dataString StringToDataString(std::string BuffPtr);
+        static dataString StringToDataString(std::string BuffPtr, char DividionSymbol, const uint8_t timePos, const uint8_t IDPos, const uint8_t dataLen, const uint8_t dataPos);
 
 };
 
@@ -87,10 +94,10 @@ class LogParser     // Обработчик *.log файлов
 
         LogParser(const char* path);  
 
-        void outputTableIntoFile(std::string server, std::string client);
+        void outputTableIntoFile(std::string* argv, uint8_t argc);
         void outputTableIntoFile();
         void outputIDIntoFile();
-        void oututDataIntoFile(std::string server, std::string client);
+        void oututDataIntoFile(std::string* argv, uint8_t argc);
 };
 
 class ParserDAF : public Parser
