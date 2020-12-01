@@ -111,6 +111,10 @@ def Parse():
         cmbBoxfile = open('temp/ID.txt', 'r')   # Открытие временного файла, созданного посредством LogParser
         cmbBoxValues = cmbBoxfile.read()
 
+        IDChoosebox = Text(Table, width = 48, height = 1)  # Текст со списком ID для визуального анализа блоков, отвечающих двигателю и поиска диагностики
+        IDChoosebox.insert(INSERT, 'Enter Multiple IDs Here')
+        IDChoosebox.pack(side = TOP, padx = 7)
+
         ServerBox = ttk.Combobox(Table, values = cmbBoxValues, state = "readonly")             # Выбор ID сервера
         ServerBox.pack(side = TOP, padx = 10)   
         ServerBox.set("-Select Server-")
@@ -127,7 +131,7 @@ def Parse():
         def ParseTable():       # Определяется здесь, потому что зависит от комбобоксов в этом конкретном созданном окне. Аналогично для последующей функции
             outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])    # Диалоговое окно спрашивающее путь к файлу сохранения
             if(outputPath != ''):
-                proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOG' + ClientBox.get() + ServerBox.get() + '.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
+                proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
                 proc.wait()     # Ожидание конца выполнения
                 if os.path.isfile(outputPath + '.bin'):          # Если после выполнения нашёлся бинарный файл с нужным именем, то програма выполнилась правильно 
                     messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin')  # Сообщение с информацией об успехе
@@ -144,12 +148,22 @@ def Parse():
 # Сохранение таблицы-лога в формате *.txt #
 
         def SaveLog():
-            outputPath = asksaveasfilename(filetypes=[("Text File", "*.txt")])  # Спросить путь, куда сохранить
-            if(outputPath != ''):
-                if (ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'): # Если выбраны оба ID 
-                    shutil.copyfile('temp/LOG' + ClientBox.get() + ServerBox.get() + 'save.txt', outputPath + '.txt')
-                else:   # Иначе сохранить исходную цеую таблицу
-                    shutil.copyfile('temp/LOGsave.txt', outputPath + '.txt')
+            thing = str(IDChoosebox.get(1.0, END)[0:-1])
+            temp = 'Enter Multiple IDs Here'
+
+            if(temp.find(thing) == -1):
+                outputPath = asksaveasfilename(filetypes=[("Text File", "*.txt")])  # Спросить путь, куда сохранить
+                if(outputPath != ''):
+                    idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + thing ,  creationflags = subprocess.SW_HIDE, shell = True)
+                    idSort.wait()       # Запустить выборку строк лога по ID, взяв их и комбобоксов
+                    shutil.copyfile('temp/LOGtempsave.txt', outputPath + '.txt')
+            else:
+                outputPath = asksaveasfilename(filetypes=[("Text File", "*.txt")])  # Спросить путь, куда сохранить
+                if(outputPath != ''):
+                    if (ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'): # Если выбраны оба ID 
+                        shutil.copyfile('temp/LOGtempsave.txt', outputPath + '.txt')
+                    else:   # Иначе сохранить исходную цеую таблицу
+                        shutil.copyfile('temp/LOGsave.txt', outputPath + '.txt')
         
         saveButton = Button (Table, text = "   Save file   ", command = SaveLog) # Кнопка вызывающая SaveLog
         saveButton.pack(side = BOTTOM, pady = 5)
@@ -186,7 +200,7 @@ def Parse():
                 
                 textbox.config(state=NORMAL)    # Включить редактирование текста
                 textbox.delete(1.0, END)        # Удалить предыдующее значение
-                textbox.insert(INSERT, open('temp/LOG' + ClientBox.get() + ServerBox.get() + '.txt', 'r').read())   # Вставить значение из файла
+                textbox.insert(INSERT, open('temp/LOGtemp.txt', 'r').read())   # Вставить значение из файла
                 textbox.config(state = DISABLED)    # ОТключить редактирование текста
 
 #**************************************************************************************************
@@ -203,7 +217,7 @@ def Parse():
                 
                 textbox.config(state=NORMAL)
                 textbox.delete(1.0, END)
-                textbox.insert(INSERT, open('temp/LOG' + ClientBox.get() + ServerBox.get() + '.txt', 'r').read())
+                textbox.insert(INSERT, open('temp/LOGtemp.txt', 'r').read())
                 textbox.config(state = DISABLED)
                 
         ServerBox.bind("<<ComboboxSelected>>", serverIDselected)    # Событие выбора ID сервера
@@ -216,12 +230,16 @@ def Parse():
             proc.wait()     # Подготовить изначальную таблицу и список ID
             IDselect = Tk()
             IDselect.title("ID select")                # Название окна
-            IDselect.geometry('300x140+800+200')    # Размеры окна и расстояние от краёв экрана
+            IDselect.geometry('300x170+800+200')    # Размеры окна и расстояние от краёв экрана
             IDselect.resizable(False, False)        # Запрет на изменение размеров окна
 
             cmbBoxfile = open('temp/ID.txt', 'r')   # Аналогичное чтение информации для блоков выбора ID сервера и клиента
             cmbBoxValues = cmbBoxfile.read()
-
+        
+            IDChoosebox = Text(IDselect, width = 48, height = 1)  # Текст со списком ID для визуального анализа блоков, отвечающих двигателю и поиска диагностики
+            IDChoosebox.insert(INSERT, 'Enter Multiple IDs Here')
+            IDChoosebox.pack(side = TOP, padx = 7)
+            
             ServerBox = ttk.Combobox(IDselect, values = cmbBoxValues, state = "readonly")             
             ServerBox.pack(side = TOP, pady = 5)
             ServerBox.set("-Select Server-")
@@ -236,13 +254,28 @@ def Parse():
 # Запуск выбранного парсера #
 
             def ParseTable():
-                if(ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'):  
+                thing = str(IDChoosebox.get(1.0, END)[0:-1])
+                temp = 'Enter Multiple IDs Here'
+
+                if(temp.find(thing) == -1):
+                    outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])
+                    if(outputPath != ''):
+                        idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + IDChoosebox.get(1.0, END) ,  creationflags = subprocess.SW_HIDE, shell = True)
+                        idSort.wait()
+                        proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
+                        print('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin')
+                        proc.wait()     # Ожидание конца выполнения
+                        if os.path.isfile(outputPath + '.bin'):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
+                            messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin')  # Сообщение с информацией об успехе
+                        else:
+                            messagebox.showerror('Error', 'File hasn\'t been generated!')   # Сообщение-ошибка
+                elif(ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'):  
                     outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])
                     if(outputPath != ''):
                         idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
                         idSort.wait()
-                        proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOG' + ClientBox.get() + ServerBox.get() + '.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
-                        print('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOG' + ClientBox.get() + ServerBox.get() + '.txt ' + outputPath + '.bin')
+                        proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
+                        print('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin')
                         proc.wait()     # Ожидание конца выполнения
                         if os.path.isfile(outputPath + '.bin'):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
                             messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin')  # Сообщение с информацией об успехе
@@ -259,15 +292,25 @@ def Parse():
 # Сохранение лога-таблицы в виде файла #
 
             def SaveLog():
-                outputPath = asksaveasfilename(filetypes=[("Text File", "*.txt")])
-                if(outputPath != ''):
-                    if (ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'):
-                        idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
-                        idSort.wait()
-                        shutil.copyfile('temp/LOG' + ClientBox.get() + ServerBox.get() + 'save.txt', outputPath + '.txt')
-                    else:
-                        shutil.copyfile('temp/LOGsave.txt', outputPath + '.txt')
-            
+                thing = str(IDChoosebox.get(1.0, END)[0:-1])
+                temp = 'Enter Multiple IDs Here'
+
+                if(temp.find(thing) == -1):
+                    outputPath = asksaveasfilename(filetypes=[("Text File", "*.txt")])
+                    if(outputPath != ''):
+                            idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + thing ,  creationflags = subprocess.SW_HIDE, shell = True)
+                            idSort.wait()
+                            shutil.copyfile('temp/LOGtempsave.txt', outputPath + '.txt')
+                else:
+                    outputPath = asksaveasfilename(filetypes=[("Text File", "*.txt")])
+                    if(outputPath != ''):
+                        if (ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'):
+                            idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
+                            idSort.wait()
+                            shutil.copyfile('temp/LOGtempsave.txt', outputPath + '.txt')
+                        else:
+                            shutil.copyfile('temp/LOGsave.txt', outputPath + '.txt')
+                
             saveButton = Button (IDselect, text = "   Save file   ", command = SaveLog)
             saveButton.pack(side = BOTTOM, pady = 5)
     

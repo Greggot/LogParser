@@ -88,10 +88,10 @@ void LogParser::dataStringOut(dataString out)   // Аналогичным обр
 
 //   Вывод таблицы общения сервера и клиента в файл   //
 
-void LogParser::outputTableIntoFile(std::string server, std::string client)
+void LogParser::outputTableIntoFile(std::string* argv, uint8_t argc)
 {
-    std::string outPath = "temp/LOG" + server + client + ".txt";        // Создаются два временных файла, один и которых нужен для отображения на экране с корректной табуляцией
-    std::string outPathSave =  "temp/LOG" + server + client + "save.txt";   // Второй для сохранения, потому что каталог временный и очищается после завершения программы
+    std::string outPath = "temp/LOGtemp.txt";        // Создаются два временных файла, один и которых нужен для отображения на экране с корректной табуляцией
+    std::string outPathSave =  "temp/LOGtempsave.txt";   // Второй для сохранения, потому что каталог временный и очищается после завершения программы
 
     std::ofstream LogFile;      
     LogFile.open(outPath);
@@ -101,28 +101,31 @@ void LogParser::outputTableIntoFile(std::string server, std::string client)
 
     for (uint32_t i = 0; i < logLength; i++)    // Пройти весь лог и объекта класса
     {       
-        if (LOG[i].ID == server || LOG[i].ID == client)     // Если ID лога равно ID клиента или сервера, то...
+        for (uint8_t j = 0; j < argc; j++)
         {
-            LogFileSave << LOG[i].ID << '\t';      // Записать в файл сохранения 
-            LogFile << LOG[i].ID << '\t' << '\t';   // Записать в файл отображения с одной лишней табуляцией, ибо иначе никак не получется отобразить 
-                                                    //в виджете корректно без лишнего символа
-            for (uint8_t j = 0; j < LOG[i].DataLen; j++)
+            if (LOG[i].ID == argv[j])     // Если ID лога равно ID клиента или сервера, то...
             {
-                LogFile << LOG[i].Data[j] << "\t";  // В остальном запись в оба файла аналогична выводу структуры в консоль
-                LogFileSave << LOG[i].Data[j] << "\t";
-            }
-            if(LOG[i].DataLen < STRING_LENGTH_BYTE)
-            {
-                uint8_t differense = STRING_LENGTH_BYTE - LOG[i].DataLen;
-                for (uint8_t j = 0; j < differense; j++)
+                LogFileSave << LOG[i].ID << '\t';      // Записать в файл сохранения 
+                LogFile << LOG[i].ID << '\t' << '\t';   // Записать в файл отображения с одной лишней табуляцией, ибо иначе никак не получется отобразить 
+                                                        //в виджете корректно без лишнего символа
+                for (uint8_t j = 0; j < LOG[i].DataLen; j++)
                 {
-                    LogFile << "\t";
-                    LogFileSave << '\t';
+                    LogFile << LOG[i].Data[j] << "\t";  // В остальном запись в оба файла аналогична выводу структуры в консоль
+                    LogFileSave << LOG[i].Data[j] << "\t";
                 }
-            }
+                if(LOG[i].DataLen < STRING_LENGTH_BYTE)
+                {
+                    uint8_t differense = STRING_LENGTH_BYTE - LOG[i].DataLen;
+                    for (uint8_t j = 0; j < differense; j++)
+                    {
+                        LogFile << "\t";
+                        LogFileSave << '\t';
+                    }
+                }
 
-            LogFile << LOG[i].TIME << "\n";
-            LogFileSave << LOG[i].TIME << "\n";
+                LogFile << LOG[i].TIME << "\n";
+                LogFileSave << LOG[i].TIME << "\n";
+            }
         }
     }
     LogFileSave.close();
@@ -178,36 +181,43 @@ void LogParser::outputTableIntoFile()       // Функция, аналогич�
 
 //   Вывод байт данных в файл   //
 
-void LogParser::oututDataIntoFile(std::string server, std::string client)       // Аналогично выводу в файл таблицы взаимодействия сервера-клиента, но
-{                                                                               // в сам файл не выводятся ID и TIME
-    std::string outPath = "temp/dataLOG" + server + client + ".txt";
+void LogParser::oututDataIntoFile(std::string* argv, uint8_t argc)       // Аналогично выводу в файл таблицы взаимодействия сервера-клиента, но
+{         
+    std::string name = "";
+    for (uint8_t i = 0; i < argc; i++)
+        name += argv[i];
+                                                                          // в сам файл не выводятся ID и TIME
+    std::string outPath = "temp/dataLOGtemp.txt";
 
     std::ofstream LogFile;
     LogFile.open(outPath);
 
     for (uint32_t i = 0; i < logLength; i++)
     { 
-        if (LOG[i].ID == server || LOG[i].ID == client)      
-        {                                                   
-            for (uint8_t j = 0; j < LOG[i].DataLen; j++)
-            {
-                if (LOG[i].Data[j][0] != '0')       // Первый незначащий нуль игнорируется, удобно для чтения, похоже на формат, выдаваемый Excel 
-                    LogFile << LOG[i].Data[j];
-                else 
-                    LogFile << LOG[i].Data[j][1];
-                
-                if (j != LOG[i].DataLen - 1)
-                    LogFile <<"\t";
-                
-            }
-            if(LOG[i].DataLen < STRING_LENGTH_BYTE)
-            {
-                uint8_t differense = STRING_LENGTH_BYTE - LOG[i].DataLen;
-                for (uint8_t j = 0; j < differense; j++)
-                    LogFile << "\t";
-            }
+        for (uint8_t j = 0; j < argc; j++)
+        {
+            if (LOG[i].ID == argv[j])      
+            {                                                   
+                for (uint8_t j = 0; j < LOG[i].DataLen; j++)
+                {
+                    if (LOG[i].Data[j][0] != '0')       // Первый незначащий нуль игнорируется, удобно для чтения, похоже на формат, выдаваемый Excel 
+                        LogFile << LOG[i].Data[j];
+                    else 
+                        LogFile << LOG[i].Data[j][1];
+                    
+                    if (j != LOG[i].DataLen - 1)
+                        LogFile <<"\t";
+                    
+                }
+                if(LOG[i].DataLen < STRING_LENGTH_BYTE)
+                {
+                    uint8_t differense = STRING_LENGTH_BYTE - LOG[i].DataLen;
+                    for (uint8_t j = 0; j < differense; j++)
+                        LogFile << "\t";
+                }
 
-            LogFile << '\n';
+                LogFile << '\n';
+            }
         }
     }
 
