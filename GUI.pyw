@@ -19,6 +19,100 @@ path = ''
 prods = ['Delphi', 'TRW']  # Список производителей
 servs = {'Delphi' : 'ReadMemoryByAddress', 'TRW' : 'TransferData'}  # Словарь, в котором обращение к элементам идёт не по целочисленному индексу, а по строкам
 
+class LogFormatSettings:
+    def __init__(self, sizeX, sizeY, WinName, path):
+        self.sizeX = sizeX
+        self.sizeY = sizeY
+        self.WinName = WinName
+        self.path = path
+        
+        self.AskWin = None
+        self.DividionSymbol = None
+        self.TimePos = None
+        self.DataPos = None
+        self.DataLenPos = None
+        self.IDPos = None
+
+        self.settings = None 
+
+    def __repr__(self):
+        return repr([self.DividionSymbol, self.TimePos, self.IDPos, self.DataLenPos, self.DataPos])
+    
+    def CreateAskWindow(self):
+        self.AskWin = Tk()
+        self.AskWin.title(self.WinName)
+        self.AskWin.geometry(self.sizeX + 'x' + self.sizeY + '+800+200')
+        self.AskWin.resizable(False, False)
+
+        InputFile = open(self.path, 'r')
+        SampleString = InputFile.readline()
+        SampleList = SampleString.split()
+
+        DataPosBox = ttk.Combobox(self.AskWin, values = SampleList, state = "readonly")
+        DataPosBox.grid(column = 0, row = 0, padx = 5, pady = 5)
+        DataPosBox.set("-Data Position-")
+
+        DataLenPosBox = ttk.Combobox(self.AskWin, values = SampleList, state = "readonly")
+        DataLenPosBox.grid(column = 0, row = 1, padx = 5, pady = 5)
+        DataLenPosBox.set("-Data Length Position-")
+
+        DataLenStates = ['Is in a string', 'Always equals to 8']
+        DataLenChoosePosBox = ttk.Combobox(self.AskWin, values = DataLenStates, state = "readonly")
+        DataLenChoosePosBox.grid(column = 1, row = 1, padx = 5, pady = 5)
+        DataLenChoosePosBox.set(DataLenStates[0])
+
+        IDPosBox = ttk.Combobox(self.AskWin, values = SampleList, state = "readonly")
+        IDPosBox.grid(column = 0, row = 2, padx = 5, pady = 5)
+        IDPosBox.set("-ID Position-")
+
+        TimePosBox = ttk.Combobox(self.AskWin, values = SampleList, state = "readonly")
+        TimePosBox.grid(column = 0, row = 3, padx = 5, pady = 5)
+        TimePosBox.set("-Time Position-")
+
+        DividionSymbols = ['Spaces', 'Tabs']
+        DividionSymbolsBox = ttk.Combobox(self.AskWin, values = DividionSymbols, state = "readonly")
+        DividionSymbolsBox.grid(column = 0, row = 4, padx = 5, pady = 5)
+        DividionSymbolsBox.set('-Dividion Symbols-')
+
+        def ChangeData(event):
+            self.DataPos = SampleList.index(DataPosBox.get())
+        def ChangeDataLength(event):
+            self.DataLenPos = SampleList.index(DataLenPosBox.get())
+        def ChangeID(event):
+            self.IDPos = SampleList.index(IDPosBox.get())
+        def ChangeTime(event):
+            self.TimePos = SampleList.index(TimePosBox.get())
+        def ChangeDataLenChoosePos(event):
+            if(DataLenChoosePosBox.get() == DataLenStates[1]):
+                self.DataLenPos = 255
+        def ChangeDividionSymbol(event):
+            if(DividionSymbolsBox.get() == DividionSymbols[0]):
+                self.DividionSymbol = 0
+            else:
+                self.DividionSymbol = 1
+
+        DataPosBox.bind("<<ComboboxSelected>>", ChangeData)
+        DataLenPosBox.bind("<<ComboboxSelected>>", ChangeDataLength)
+        IDPosBox.bind("<<ComboboxSelected>>", ChangeID)
+        TimePosBox.bind("<<ComboboxSelected>>", ChangeTime)
+
+        DataLenChoosePosBox.bind("<<ComboboxSelected>>", ChangeDataLenChoosePos)
+        DividionSymbolsBox.bind("<<ComboboxSelected>>", ChangeDividionSymbol)
+
+        ContinueButton = Button(self.AskWin, text = 'Continue...')
+        ContinueButton.grid(column = 5, row = 1, padx = 20)
+
+        def CloseAndPrint(event):
+            self.AskWin.quit()
+            self.AskWin.destroy()
+            self.settings = str(self.DividionSymbol) + ' ' + str(self.TimePos) + ' ' + str(self.IDPos) + ' ' + str(self.DataLenPos) + ' ' +  str(self.DataPos)
+        
+        ContinueButton.bind('<Button-1>', CloseAndPrint) # ЛКМ
+        self.AskWin.bind('<Return>', CloseAndPrint)
+        
+        self.AskWin.mainloop()
+        return self.settings
+
 #**************************************************************************************************
 # Window Structures (Widgets)
 #**************************************************************************************************
@@ -27,8 +121,21 @@ os.system('mkdir temp')         # Создание временной папки
 
 root = Tk()
 root.title("Parser")                # Название окна
-root.geometry('640x300+100+100')    # Размеры окна и расстояние от краёв экрана
+root.geometry('640x400+100+100')    # Размеры окна и расстояние от краёв экрана
 root.resizable(False, False)        # Запрет на изменение размеров окна
+
+NameText = Text(root, width = 15, height = 1)
+NameText.pack(padx = 5, pady = 5)
+
+def CreateSettingsWin():
+    InputFilePath = askopenfilename(filetypes=[("Log File", "*.log"), ("Txt File", "*.txt"), ("002 File", "*.002")])
+    if(InputFilePath != ''):
+        Ask = LogFormatSettings('400', '300', 'Log Format Settings', InputFilePath)
+        settings = Ask.CreateAskWindow()
+        NameText.delete(1.0, END)
+        NameText.insert(1.0, settings)
+
+Button(root, text = "Format Settings", command = CreateSettingsWin).pack(side = TOP, pady = 5, padx = 5)
 
 SettingsFrame = ttk.LabelFrame(root, text = 'Settings', width = 300)            # Рамка, внутри которой находится настройки
 SettingsFrame.pack(fill = X)
@@ -100,8 +207,9 @@ Checkbutton(CheckFrame, text = "Show Table", variable = showTable).pack(side = L
 # Запускает одно из окон на выбор #             ОКНО С ТАБЛИЦЕЙ
 
 def Parse():
+    print('LogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1])
     if(showTable.get() == 1 and path.get() != ''):  # Если галочка стоит и выбран файл, то создаётся окно
-        proc = subprocess.Popen('LogParser ' + path.get(),  creationflags = subprocess.SW_HIDE, shell = True)   # Подготовить данные для окна вызовом программы
+        proc = subprocess.Popen('LogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1],  creationflags = subprocess.SW_HIDE, shell = True)   # Подготовить данные для окна вызовом программы
         proc.wait()                                                                                             # Обрабатывающей лог.log
         Table = Tk()
         Table.title("Table")                # Название окна
@@ -154,7 +262,7 @@ def Parse():
             if(temp.find(thing) == -1):
                 outputPath = asksaveasfilename(filetypes=[("Text File", "*.txt")])  # Спросить путь, куда сохранить
                 if(outputPath != ''):
-                    idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + thing ,  creationflags = subprocess.SW_HIDE, shell = True)
+                    idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1] + ' ' + thing ,  creationflags = subprocess.SW_HIDE, shell = True)
                     idSort.wait()       # Запустить выборку строк лога по ID, взяв их и комбобоксов
                     shutil.copyfile('temp/LOGtempsave.txt', outputPath + '.txt')
             else:
@@ -195,7 +303,7 @@ def Parse():
         def serverIDselected(event):
             if(ClientBox.get() != '-Select Client-' and ClientBox.get() != ServerBox.get()):    # Если второй комбобокс был выбран и не равен текущему
 
-                idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
+                idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1] +  ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
                 idSort.wait()       # Запустить выборку строк лога по ID, взяв их и комбобоксов
                 
                 textbox.config(state=NORMAL)    # Включить редактирование текста
@@ -212,7 +320,7 @@ def Parse():
         def clientIDselected(event):
             if(ServerBox.get() != '-Select Server-' and ClientBox.get() != ServerBox.get()):
 
-                idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
+                idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1] + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
                 idSort.wait()
                 
                 textbox.config(state=NORMAL)
@@ -229,7 +337,7 @@ def Parse():
         
     else:   # Создание минималистичной версии окна без визуального отображения таблицы. Функции ParseTable() и SaveLog() аналогичны таковым в ветке if, но зависят от комбобоксов этого окна
         if(path.get() != ''):   # Если галочка не стоит и выбран файл
-            proc = subprocess.Popen('LogParser ' + path.get(),  creationflags = subprocess.SW_HIDE, shell = True)
+            proc = subprocess.Popen('LogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1],  creationflags = subprocess.SW_HIDE, shell = True)
             proc.wait()     # Подготовить изначальную таблицу и список ID
             IDselect = Tk()
             IDselect.title("ID select")                # Название окна
@@ -263,7 +371,7 @@ def Parse():
                 if(temp.find(thing) == -1):     # Если в тектовом поле не присутствует стандартная строка или не до конца стёртая изначальная строка
                     outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])
                     if(outputPath != ''):                   # Стартует процесс, которому передаются ID из текстового поля
-                        idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + IDChoosebox.get(1.0, END) ,  creationflags = subprocess.SW_HIDE, shell = True)
+                        idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1] + ' ' + IDChoosebox.get(1.0, END) ,  creationflags = subprocess.SW_HIDE, shell = True)
                         idSort.wait()
                         proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
                         print('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin')
@@ -276,7 +384,7 @@ def Parse():
                 elif(ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'):    # Иначе используются два различных ID выбранных из дух списков
                     outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])
                     if(outputPath != ''):
-                        idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
+                        idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + NameText.get(1.0, END)[0:-1] + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
                         idSort.wait()
                         proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
                         print('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin')

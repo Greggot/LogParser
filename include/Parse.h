@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <iostream>
+#include <vector>
 
 //**************************************************************************************************
 // Definitions
@@ -48,7 +49,7 @@ struct dataString          // Структура поленой информац
 {
     uint8_t DataLen;
     std::string ID;
-    std::string * Data;
+    byteString Data;
     std::string TIME;
 };
 
@@ -61,7 +62,6 @@ class Parser        // Шаблон, от которого наследуютс�
     public:       
         static void byteStringOut(byteString Out);  // Console outputs
         static void dataStringOut(dataString Out);
-        static void SPNDataOut(SPNData Out);
 
         static char* ReadFile(const char* path, uint32_t& fileLength);  // text file input
         static dataString* ReadDataString(const char* path, char DividionSymbol, uint8_t timePos, uint8_t IDPos, uint8_t dataLenPos, uint8_t dataPos, uint32_t& size);
@@ -70,6 +70,7 @@ class Parser        // Шаблон, от которого наследуютс�
         static dataString StringToDataString(std::string BuffPtr);
         static dataString StringToDataString(std::string BuffPtr, char DividionSymbol, const uint8_t timePos, const uint8_t IDPos, const uint8_t dataLen, const uint8_t dataPos);
 
+        static bool IsCommand (byteString Input, CommandIndex cmnd);
 };
 
 class LogParser     // Обработчик *.log файлов
@@ -79,7 +80,7 @@ class LogParser     // Обработчик *.log файлов
         static void dataStringOut(dataString out);
 
         static std::string* ListID(std::string IDsourse[], std::string ID, uint8_t& IDsNumber);
-        dataString* ProcessLog (const char* path);
+        dataString* ProcessLog(const char* path, char DividionSymbol, uint8_t timePos, uint8_t IDpos, uint8_t dataLenPos, uint8_t dataPos) ;
 
         dataString* LOG; 
         uint32_t logLength;
@@ -92,7 +93,7 @@ class LogParser     // Обработчик *.log файлов
         uint32_t getlogLength();
         std::string * getIDs();
 
-        LogParser(const char* path);  
+        LogParser(const char* path, char DividionSymbol, uint8_t timePos, uint8_t IDpos, uint8_t dataLenPos, uint8_t dataPos); 
 
         void outputTableIntoFile(std::string* argv, uint8_t argc);
         void outputTableIntoFile();

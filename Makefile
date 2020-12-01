@@ -7,10 +7,10 @@ OBJ = *.o
 CPP = *.cpp
 CLEAR = rm -f
 
-LogParser : mainLOG.o LogParser.o
-	$(CC) -o LogParser mainLOG.o LogParser.o
+LogParser : mainLOG.o LogParser.o Parse.o
+	$(CC) -o LogParser mainLOG.o LogParser.o Parse.o
 IDLogParser:
-	$(CC) -o IDLogParser IDlogmain.o LogParser.o
+	$(CC) -o IDLogParser IDlogmain.o LogParser.o Parse.o
 
 $(PARSE) : mainParser.o
 	$(CC) -o $@ $^

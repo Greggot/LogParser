@@ -16,9 +16,14 @@ dataString emptydataString = {0, {0}, {0}, {0}};    // Пустая дата-с�
 
 //   Конструктор, задающий буфер дата-строк, список идентификаторов   //
 
-LogParser::LogParser(const char* path)
+LogParser::LogParser(const char* path, char DividionSymbol, uint8_t timePos, uint8_t IDpos, uint8_t dataLenPos, uint8_t dataPos)
 { 
-    this->LOG = ProcessLog(path);   // Процедура считывает лог, вовращает буффер структур, внутри неё инициалиируются остальные элементы класса
+
+    this->LOG = ProcessLog(path, DividionSymbol, timePos, IDpos, dataLenPos, dataPos);   // Процедура считывает лог, вовращает буффер структур, внутри неё инициалиируются остальные элементы класса
+
+    Parser::dataStringOut(LOG[0]);
+    std::cout << "...\n";
+    Parser::dataStringOut(LOG[logLength - 1]);
 }
 
 //**************************************************************************************************
@@ -60,8 +65,7 @@ void LogParser::dataStringOut(dataString out)   // Аналогичным обр
 {
     std::cout << out.ID << "\t";        // Вывести ID
 
-    for (uint8_t i = 0; i < out.DataLen; i++)   // Вывести все полезные данные
-        std::cout << out.Data[i] << "\t";
+    Parser::byteStringOut(out.Data);
     if(out.DataLen < STRING_LENGTH_BYTE)        // Если количество байт меньше образцовой строки...
     {
         uint8_t differense = STRING_LENGTH_BYTE - out.DataLen;
@@ -110,8 +114,8 @@ void LogParser::outputTableIntoFile(std::string* argv, uint8_t argc)    //Пер
                                                         //в виджете корректно без лишнего символа
                 for (uint8_t j = 0; j < LOG[i].DataLen; j++)
                 {
-                    LogFile << LOG[i].Data[j] << "\t";  // В остальном запись в оба файла аналогична выводу структуры в консоль
-                    LogFileSave << LOG[i].Data[j] << "\t";
+                    LogFile << std::uppercase << std::hex << (int) LOG[i].Data.bytes[j] << "\t";  // В остальном запись в оба файла аналогична выводу структуры в консоль
+                    LogFileSave << std::uppercase << std::hex << (int) LOG[i].Data.bytes[j] << "\t";
                 }
                 if(LOG[i].DataLen < STRING_LENGTH_BYTE)
                 {
@@ -155,8 +159,8 @@ void LogParser::outputTableIntoFile()       // Функция, аналогич�
 
         for (uint8_t j = 0; j < LOG[i].DataLen; j++)
             {
-                LogFile << LOG[i].Data[j] << "\t";
-                LogFileSave << LOG[i].Data[j] << "\t";
+                LogFile << std::uppercase << std::hex << (int) LOG[i].Data.bytes[j] << "\t";
+                LogFileSave << std::uppercase << std::hex << (int) LOG[i].Data.bytes[j] << "\t";
             }
             if(LOG[i].DataLen < STRING_LENGTH_BYTE)
             {
@@ -197,10 +201,7 @@ void LogParser::oututDataIntoFile(std::string* argv, uint8_t argc)       // Ан
             {                                                   
                 for (uint8_t j = 0; j < LOG[i].DataLen; j++)
                 {
-                    if (LOG[i].Data[j][0] != '0')       // Первый незначащий нуль игнорируется, удобно для чтения, похоже на формат, выдаваемый Excel 
-                        LogFile << LOG[i].Data[j];
-                    else 
-                        LogFile << LOG[i].Data[j][1];
+                    LogFile << std::uppercase << std::hex << (int) LOG[i].Data.bytes[j];
                     
                     if (j != LOG[i].DataLen - 1)
                         LogFile <<"\t";
@@ -244,71 +245,39 @@ void LogParser::outputIDIntoFile()
 
 //   Обработка фалйа *.log   //
 
-dataString* LogParser::ProcessLog(const char* path)     // На выход подаётся структура, ID-DATA-TIME
+dataString* LogParser::ProcessLog(const char* path, char DividionSymbol, uint8_t timePos, uint8_t IDpos, uint8_t dataLenPos, uint8_t dataPos)     // На выход подаётся структура, ID-DATA-TIME
 {  
-    char *Buffer = new char[MAX_BUFFER_SIZE] {0};       // Буфер под содержимое файла
-    char* BuffPtr = Buffer;
+    uint32_t stringCount = 0;
+    dataString* LOG  = Parser::ReadDataString(path, DividionSymbol, timePos, IDpos, dataLenPos, dataPos, stringCount);
+    uint8_t idCount = 0;
+    std::vector <std::string> IDs;
 
-    dataString* LOG = new dataString [MAX_BUFFER_SIZE / MAX_STRING_LENGTH_ASCII];   // Выходная структура
-    for (uint32_t i = 0; i < MAX_BUFFER_SIZE / MAX_STRING_LENGTH_ASCII; i++)
-        LOG[i] = emptydataString;
-
-    std::string * IDs = new std::string [0xFF] {""};    // Выходной список ID
-
-    uint8_t subStringCounter = 0;       // Счётчик элементов подстроки
-    uint8_t DataLength = 0;             // Счётчик количества байт даннх в строке
-    uint16_t i = 0;                     // Счётчик количества пройденных символов в строке ASCII
-    uint32_t stringCount = 0;           // Счётчик обработанных строк
-    uint8_t idCount = 0;                // Мощность множества {ID}
-    uint8_t& idCountRef = idCount;      // Ссылка, передаваемая процедуре ListID
-    std::string buff = "";              // Буфер, в который помещается элемент строки
-
-    std::fstream File;
-    File.open(path);
-
-    while (File.getline(BuffPtr, MAX_STRING_LENGTH_ASCII, '\n'))    // Считать строку
+    for (uint32_t i = 0; i < stringCount; i++)
     {
-        std::string * String = new std::string [MAX_SUBSTRING_NUMBER] {""};
-        subStringCounter = 0;
-        i = 0;
-        bool isSpace = false;   // Флаг наличия пробела, окончания элемента строки
-
-        while (BuffPtr[i] != '\x0') // Пока строка не закончилась
+        bool isAlreadyhere = false;
+        for (uint8_t j = 0; j < IDs.size(); j++)
         {
-            isSpace = BuffPtr[i] == ' ';    
-            while(BuffPtr[i] == ' ')    // Пропуск последовательных пробелов
-            {
-                i++;
-            }
-            if(isSpace)     // Если текущий элемент закончился пробелом
-            {
-                String[subStringCounter] = buff;    // Занести его в буфер строки
-                subStringCounter++;                 
-                buff = "";                      // Обнулить буфер элемента
-            }   
-            buff += BuffPtr[i];         // Считать следующий символ элемента 
-            i++;
+            if (LOG[i].ID == IDs[j])
+                isAlreadyhere = true;
         }
-        buff = "";      // После окончания строки нужно очистить буфер
+        if(!isAlreadyhere)
+        {
+            IDs.push_back(LOG[i].ID);
+            idCount++;
+        }
 
-        DataLength = std::stoi(String[BYTE_NUMBER_POSITION], 0, 10);    // Перевести строковый элемент с количеством байт данных в число
-        std::string * temp = new std::string [DataLength] {""};         // Буфер байт данных строки
-
-        for (uint8_t j = 0; j < DataLength; j++)    // Заполнить его байтами
-            temp[j] = String[DATA_START_POSITION + j];
-
-        LOG[stringCount] = {DataLength, String[ID_POSITION], temp,  String[DataLength + COLUMNS_BEFORE_TIME]};  // Инициализировать структуру строки
-        IDs = LogParser::ListID(IDs, LOG[stringCount].ID, idCountRef);      // Добавить новый встретившийся ID в строке
-
-        stringCount++;
-        BuffPtr += MAX_STRING_LENGTH_ASCII;     // Сместить буфер на строку
     }
-    File.close();
-    delete Buffer;
+    std::string* ID = new std::string[idCount] {""};
+    
+    for (uint8_t i = 0; i < idCount; i++)
+    {
+        std::cout << IDs[i] << std::endl;
+        ID[i] = IDs[i];
+    }
 
-    this->logLength = (int) stringCount;    // Инициализировать количество строк лога
-    this->IDs = IDs;                        // список ID
-    this->IDlen = (int)idCount;             // и количество ID
+    this->logLength = stringCount;    // Инициализировать количество строк лога
+    this->IDs = ID;                        // список ID
+    this->IDlen = idCount;             // и количество ID
 
     return LOG;
 }
