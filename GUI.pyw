@@ -97,7 +97,7 @@ Checkbutton(CheckFrame, text = "Show Table", variable = showTable).pack(side = L
 # Procedure Parse()
 #**************************************************************************************************
 
-# Запускает одно из окон на выбор #
+# Запускает одно из окон на выбор #             ОКНО С ТАБЛИЦЕЙ
 
 def Parse():
     if(showTable.get() == 1 and path.get() != ''):  # Если галочка стоит и выбран файл, то создаётся окно
@@ -224,6 +224,9 @@ def Parse():
         ClientBox.bind("<<ComboboxSelected>>", clientIDselected)    # Событие выбора ID клиента
         
         Table.mainloop()
+        
+ #  ОКНО БЕЗ ТАБЛИЦЫ
+        
     else:   # Создание минималистичной версии окна без визуального отображения таблицы. Функции ParseTable() и SaveLog() аналогичны таковым в ветке if, но зависят от комбобоксов этого окна
         if(path.get() != ''):   # Если галочка не стоит и выбран файл
             proc = subprocess.Popen('LogParser ' + path.get(),  creationflags = subprocess.SW_HIDE, shell = True)
@@ -236,7 +239,7 @@ def Parse():
             cmbBoxfile = open('temp/ID.txt', 'r')   # Аналогичное чтение информации для блоков выбора ID сервера и клиента
             cmbBoxValues = cmbBoxfile.read()
         
-            IDChoosebox = Text(IDselect, width = 48, height = 1)  # Текст со списком ID для визуального анализа блоков, отвечающих двигателю и поиска диагностики
+            IDChoosebox = Text(IDselect, width = 48, height = 1)  # Текстовое поле для выбора нескольких ID для фильтра
             IDChoosebox.insert(INSERT, 'Enter Multiple IDs Here')
             IDChoosebox.pack(side = TOP, padx = 7)
             
@@ -257,19 +260,20 @@ def Parse():
                 thing = str(IDChoosebox.get(1.0, END)[0:-1])
                 temp = 'Enter Multiple IDs Here'
 
-                if(temp.find(thing) == -1):
+                if(temp.find(thing) == -1):     # Если в тектовом поле не присутствует стандартная строка или не до конца стёртая изначальная строка
                     outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])
-                    if(outputPath != ''):
+                    if(outputPath != ''):                   # Стартует процесс, которому передаются ID из текстового поля
                         idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + IDChoosebox.get(1.0, END) ,  creationflags = subprocess.SW_HIDE, shell = True)
                         idSort.wait()
                         proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
                         print('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin')
                         proc.wait()     # Ожидание конца выполнения
-                        if os.path.isfile(outputPath + '.bin'):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
-                            messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin')  # Сообщение с информацией об успехе
+                        if os.path.isfile(outputPath + '.bin'):
+                            messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin') 
                         else:
-                            messagebox.showerror('Error', 'File hasn\'t been generated!')   # Сообщение-ошибка
-                elif(ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'):  
+                            messagebox.showerror('Error', 'File hasn\'t been generated!') 
+                            
+                elif(ServerBox.get() != '-Select Server-' and ClientBox.get() != '-Select Client-'):    # Иначе используются два различных ID выбранных из дух списков
                     outputPath = asksaveasfilename(filetypes=[("Binary File", "*.bin")])
                     if(outputPath != ''):
                         idSort = subprocess.Popen('IDLogParser ' + path.get() + ' ' + ClientBox.get() + ' ' + ServerBox.get() ,  creationflags = subprocess.SW_HIDE, shell = True)
@@ -277,10 +281,10 @@ def Parse():
                         proc = subprocess.Popen('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin',  creationflags = subprocess.SW_HIDE, shell = True)  # Запуск программы извне
                         print('Parser' + ProdBox.get() + ServBox.get() + ' ' + os.getcwd() + '\\temp\dataLOGtemp.txt ' + outputPath + '.bin')
                         proc.wait()     # Ожидание конца выполнения
-                        if os.path.isfile(outputPath + '.bin'):          # Если после выполнения нашёлся бинарный файл с нужны именем, то програма выполнилась правильно 
-                            messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin')  # Сообщение с информацией об успехе
+                        if os.path.isfile(outputPath + '.bin'): 
+                            messagebox.showinfo('Success', 'File has been generated at ' + outputPath + '.bin') 
                         else:
-                            messagebox.showerror('Error', 'File hasn\'t been generated!')   # Сообщение-ошибка
+                            messagebox.showerror('Error', 'File hasn\'t been generated!')  
             
             button = Button (IDselect, text = "   Parse   ", command = ParseTable)
             button.pack(side = BOTTOM, pady = 5)
